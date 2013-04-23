@@ -185,6 +185,11 @@ $(document).ready(function () {
     $('#input').keypress(function (ev) {
         if (ev.which === 13) {
             ev.preventDefault();
+            //only teacher and first student can chat.
+            if (position != 1 && position != 2) {
+                alert('sorry, you might not ask question right now, please waiting for your turn.');
+                return;
+            };
 
             var body = $(this).val();
 
@@ -347,6 +352,7 @@ $(document).bind('user_left', function (ev, nick) {
     }
     console.log("new position " + position);
     if (position != 1) Groupie.add_message("<div class='notice'>"+ (position-1) + "position </div>");
-
+    delete Groupie.participants[nick];
+    total--;
 
 });
