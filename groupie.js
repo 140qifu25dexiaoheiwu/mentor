@@ -9,6 +9,8 @@ var Groupie = {
     participants: null,
     position: null,
     total: null,
+    teacher_nickname: null,
+    student_nickname: null,
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -135,18 +137,33 @@ var Groupie = {
         var from = $(message).attr('from');
         var room = Strophe.getBareJidFromJid(from);
         var nick = Strophe.getResourceFromJid(from);
-
+        Groupie.student_nickname = nick;
         // make sure this message is from the correct room
         if (room === Groupie.room) {
             var body = $(message).children('body').text();
             Groupie.add_message("<div class='message private'>" +
-                                "@@ &lt;<span class='nick'>" +
+                                "&lt;<span class='nick'>" +
                                 nick + "</span>&gt; <span class='body'>" +
-                                body + "</span> @@</div>");
+                                body + "</span></div>");
             
         }
 
         return true;
+    },
+
+    on_position_change: function () {
+        //teacher in the first place
+        if (position != 1){
+          if (position == 2) {
+            Groupie.add_message("<div class='notice'>同学，你正处于第1位，可以开始提问 </div>");
+            Groupie.connection.send(
+                                $msg({
+                                    to: Groupie.room + "/" + Groupie.teacher_nickname,
+                                    type: "chat"}).c('body').t("老师好，我是" + Groupie.nickname));
+          } else{
+            Groupie.add_message("<div class='notice'>同学，你正处于第"+ (position-1) + "位，请耐心等待</div>");
+          };  
+        }
     }
 };
 
@@ -157,11 +174,29 @@ $(document).ready(function () {
         modal: true,
         title: 'Join a Room',
         buttons: {
-            "Join": function () {
+            /**
+            "教师登陆": function () {
                 //Groupie.room = $('#room').val().toLowerCase();
                 //Groupie.nickname = $('#nickname').val();
                 Groupie.room = "room@conference.localhost";
                 Groupie.nickname = $('#jid').val().toLowerCase();
+                //get teacher's nickname
+                Groupie.teacher_nickname = "admin";
+
+                $(document).trigger('connect', {
+                    jid: $('#jid').val().toLowerCase() + "@localhost",
+                    password: $('#password').val()
+                });
+
+                $('#password').val('');
+                $(this).dialog('close');
+            },
+            */
+            "学生登陆": function () {
+                Groupie.room = "room@conference.localhost";
+                Groupie.nickname = $('#jid').val().toLowerCase();
+                //get teacher's nickname
+                Groupie.teacher_nickname = "admin";
 
                 $(document).trigger('connect', {
                     jid: $('#jid').val().toLowerCase() + "@localhost",
@@ -261,10 +296,24 @@ $(document).ready(function () {
                             "</div>");
                 }
             } else {
+                var target = Groupie.teacher_nickname;
+                if (Groupie.nickname == Groupie.teacher_nickname) {
+                    target = Groupie.student_nickname;
+                };
                 Groupie.connection.send(
-                    $msg({
-                        to: Groupie.room,
-                        type: "groupchat"}).c('body').t(body));
+                                $msg({
+                                    to: Groupie.room + "/" + target,
+                                    type: "chat"}).c('body').t(body));
+                Groupie.add_message(
+                            "<div class='message private'>" +
+                                "&lt;<span class='nick self'>" +
+                                Groupie.nickname + 
+                                "</span>&gt; <span class='body'>" +
+                                body + "</span></div>");
+                //Groupie.connection.send(
+                    //$msg({
+                        //to: Groupie.room,
+                        //type: "groupchat"}).c('body').t(body));
             }
 
             $(this).val('');
@@ -324,8 +373,8 @@ $(document).bind('room_joined', function () {
     $('#room-name').text(Groupie.room);
 
     Groupie.add_message("<div class='notice'>*** Room joined.</div>");
-    //teacher in the first place
-    if (position != 1) Groupie.add_message("<div class='notice'>"+ (position-1) + "position </div>");
+    
+    Groupie.on_position_change();
 });
 
 $(document).bind('user_joined', function (ev, nick) {
@@ -351,7 +400,8 @@ $(document).bind('user_left', function (ev, nick) {
         };
     }
     console.log("new position " + position);
-    if (position != 1) Groupie.add_message("<div class='notice'>"+ (position-1) + "position </div>");
+    Groupie.on_position_change();
+
     delete Groupie.participants[nick];
     total--;
 
