@@ -7,7 +7,8 @@ var Groupie = {
 
     joined: null,
     participants: null,
-    queue: null,
+    position: null,
+    total: null,
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -25,37 +26,16 @@ var Groupie = {
                 $(presence).attr('type') !== 'unavailable') {
                 // add to participant list
                 var user_jid = $(presence).find('item').attr('jid');
-                console.log(user_jid);
-                console.log(Groupie.queue.length);
-                Groupie.queue.push(nick);
-                console.log(Groupie.queue.length);
-                for ( item in Groupie.queue) {
-                    console.log(Groupie.queue[item]);
-                }
                 Groupie.participants[nick] = user_jid || true;
-                console.log(Groupie.participants[nick]);
-                console.log('append ' + nick);
-                $('#participant-list').append('<li>' + nick + '</li>');
 
+                $('#participant-list').append('<li>' + nick + '</li>');
+                total++;
+                console.log(total);
                 if (Groupie.joined) {
                     $(document).trigger('user_joined', nick);
                 }
             } else if (Groupie.participants[nick] &&
                        $(presence).attr('type') === 'unavailable') {
-
-                console.log(Groupie.queue);
-                //teacher always in the first place
-                for (var i = 1; i < Groupie.queue.length; i++){
-                    console.log(Groupie.queue[i] + " " + nick);
-                    if (Groupie.queue[i] == nick) {
-                        console.log(i);
-                        Groupie.queue = Groupie.queue.splice(0,i);
-                        break;
-                    };
-                }
-                console.log(Groupie.queue);
-
-
                 // remove from participants list
                 $('#participant-list li').each(function () {
                     if (nick === $(this).text()) {
@@ -76,6 +56,7 @@ var Groupie = {
                         Groupie.nickname = Strophe.getResourceFromJid(from);
                     }
 
+                    position = total;
                     // room join complete
                     $(document).trigger("room_joined");
                 }
@@ -179,7 +160,6 @@ $(document).ready(function () {
             "Join": function () {
                 //Groupie.room = $('#room').val().toLowerCase();
                 //Groupie.nickname = $('#nickname').val();
-
                 Groupie.room = "room@conference.localhost";
                 Groupie.nickname = $('#jid').val().toLowerCase();
 
@@ -196,7 +176,6 @@ $(document).ready(function () {
 
     $('#leave').click(function () {
         $('#leave').attr('disabled', 'disabled');
-
         Groupie.connection.send(
             $pres({to: Groupie.room + "/" + Groupie.nickname,
                    type: "unavailable"}));
@@ -306,7 +285,8 @@ $(document).bind('connect', function (ev, data) {
 $(document).bind('connected', function () {
     Groupie.joined = false;
     Groupie.participants = {};
-    Groupie.queue = new Array();
+    position = 0;
+    total = 0;
 
     Groupie.connection.send($pres().c('priority').t('-1'));
     
@@ -339,14 +319,8 @@ $(document).bind('room_joined', function () {
     $('#room-name').text(Groupie.room);
 
     Groupie.add_message("<div class='notice'>*** Room joined.</div>");
-    //teacher always in the first place
-    for (var i = 1; i < Groupie.queue.length; i++){
-        if (Groupie.queue[i] == Groupie.nickname) {
-            Groupie.add_message("<div class='notice'>You are in the " + i + " place </div>");
-            break;
-        };
-    }
-
+    //teacher in the first place
+    if (position != 1) Groupie.add_message("<div class='notice'>"+ (position-1) + "position </div>");
 });
 
 $(document).bind('user_joined', function (ev, nick) {
@@ -357,4 +331,22 @@ $(document).bind('user_joined', function (ev, nick) {
 $(document).bind('user_left', function (ev, nick) {
     Groupie.add_message("<div class='notice'>*** " + nick +
                         " left.</div>");
+
+    console.log("old position " + position);
+    var before = true;
+    for (var item in Groupie.participants ){
+        if (item == nick){
+            before = false;
+        }
+        if (Groupie.nickname == item) {
+            if (!before) {
+                position--;
+            };
+            break;
+        };
+    }
+    console.log("new position " + position);
+    if (position != 1) Groupie.add_message("<div class='notice'>"+ (position-1) + "position </div>");
+
+
 });
