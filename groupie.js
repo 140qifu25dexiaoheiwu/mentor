@@ -164,6 +164,42 @@ var Groupie = {
             Groupie.add_message("<div class='notice'>同学，你正处于第"+ (position-1) + "位，请耐心等待</div>");
           };  
         }
+    },
+
+    listRooms: function () {
+        var iq = $iq({to: "conference.localhost",
+                      //from: "admin@localhost",//Groupie.participants[Groupie.nickname],
+                      type: "get"})
+            .c("query",{xmlns: Strophe.NS.DISCO_ITEMS}); 
+        Groupie.connection.sendIQ(iq, Groupie.showRoom, Groupie.error_cb, 600);        
+    },
+
+    error_cb: function (iq) {
+        console.log(iq);
+    },
+
+    showRoom: function (iq) {
+        console.log(iq);
+        var newRoomList = [];
+        $('item', iq).each(function (index, value) {
+            var name = $(value).attr('name');
+            var jid = $(value).attr('jid');
+            
+            if (typeof name == 'undefined') {
+                name = jid.split('@')[0];
+            } //if
+            
+            alert("Room name : " + name);
+
+            console.log("name : " + name);
+            console.log("jid : " + jid);
+            Groupie.room = jid;
+            Groupie.teacher_nickname = Strophe.getNodeFromJid(jid);
+            $(document).trigger('connected');
+            //break;
+        });
+    //$('#rooms_dialog').dialog('open');
+
     }
 };
 
@@ -174,11 +210,10 @@ $(document).ready(function () {
         modal: true,
         title: 'Join a Room',
         buttons: {
-            /**
             "教师登陆": function () {
                 //Groupie.room = $('#room').val().toLowerCase();
                 //Groupie.nickname = $('#nickname').val();
-                Groupie.room = "room@conference.localhost";
+                Groupie.room = $('#jid').val().toLowerCase() + "@conference.localhost";
                 Groupie.nickname = $('#jid').val().toLowerCase();
                 //get teacher's nickname
                 Groupie.teacher_nickname = "admin";
@@ -191,21 +226,27 @@ $(document).ready(function () {
                 $('#password').val('');
                 $(this).dialog('close');
             },
-            */
-            "学生登陆": function () {
-                Groupie.room = "room@conference.localhost";
-                Groupie.nickname = $('#jid').val().toLowerCase();
-                //get teacher's nickname
-                Groupie.teacher_nickname = "admin";
 
+            "学生登陆": function () {
+                Groupie.nickname = $('#jid').val().toLowerCase();
+                Groupie.room = null;
                 $(document).trigger('connect', {
                     jid: $('#jid').val().toLowerCase() + "@localhost",
                     password: $('#password').val()
                 });
-
                 $('#password').val('');
                 $(this).dialog('close');
             }
+        }
+    });
+
+    $('#rooms_dialog').dialog({
+        autoOpen: false,
+        draggable: false,
+        modal: true,
+        title: 'Room list',
+        buttons: {
+            
         }
     });
 
@@ -329,7 +370,12 @@ $(document).bind('connect', function (ev, data) {
         data.jid, data.password,
         function (status) {
             if (status === Strophe.Status.CONNECTED) {
-                $(document).trigger('connected');
+                console.log(Groupie.room);
+                if (Groupie.room == null) {
+                    Groupie.listRooms();
+                } else{
+                    $(document).trigger('connected');                    
+                };
             } else if (status === Strophe.Status.DISCONNECTED) {
                 $(document).trigger('disconnected');
             }
@@ -373,7 +419,6 @@ $(document).bind('room_joined', function () {
     $('#room-name').text(Groupie.room);
 
     Groupie.add_message("<div class='notice'>*** Room joined.</div>");
-    
     Groupie.on_position_change();
 });
 
