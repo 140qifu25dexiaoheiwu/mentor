@@ -181,25 +181,71 @@ var Groupie = {
 
     showRoom: function (iq) {
         console.log(iq);
-        var newRoomList = [];
+        var count = 0;
         $('item', iq).each(function (index, value) {
+            count++;
             var name = $(value).attr('name');
             var jid = $(value).attr('jid');
             
             if (typeof name == 'undefined') {
                 name = jid.split('@')[0];
             } //if
-            
-            alert("Room name : " + name);
 
-            console.log("name : " + name);
-            console.log("jid : " + jid);
-            Groupie.room = jid;
-            Groupie.teacher_nickname = Strophe.getNodeFromJid(jid);
-            $(document).trigger('connected');
-            //break;
+            var element = $("<li id=" + jid + ">" + Strophe.getNodeFromJid(jid) + "</li>");
+            $("#room_panel").append(element);
         });
-    //$('#rooms_dialog').dialog('open');
+
+        if (count == 0) {
+            Groupie.connection.disconnect();
+            alert("啊哦，目前没有老师答疑");
+        }else {
+            var ul = document.getElementById('room_panel');
+            var lis = ul.getElementsByTagName('li');
+                for(var i=0;i<lis.length;i++){
+                    lis[i].onclick = function(){
+                    Groupie.room = this.id;
+                    Groupie.teacher_nickname = Strophe.getNodeFromJid(Groupie.room);
+                    $(document).trigger('connected');
+                    $("#rooms_dialog").dialog('close');
+                    $("#room_panel").empty();                 
+                   }
+                } 
+            $("#rooms_dialog").dialog('open');
+        };
+    },
+
+    insert_contact: function (elem) {
+        var jid = elem.find('.roster-jid').text();
+        var pres = Gab.presence_value(elem.find('.roster-contact'));
+        
+        var contacts = $('#roster-area li');
+
+        if (contacts.length > 0) {
+            var inserted = false;
+            contacts.each(function () {
+                var cmp_pres = Gab.presence_value(
+                    $(this).find('.roster-contact'));
+                var cmp_jid = $(this).find('.roster-jid').text();
+
+                if (pres > cmp_pres) {
+                    $(this).before(elem);
+                    inserted = true;
+                    return false;
+                } else if (pres === cmp_pres) {
+                    if (jid < cmp_jid) {
+                        $(this).before(elem);
+                        inserted = true;
+                        return false;
+                    }
+                }
+            });
+
+            if (!inserted) {
+                $('#roster-area ul').append(elem);
+            }
+        } else {
+            $('#roster-area ul').append(elem);
+        }
     },
 
     send_msg: function (to, body) {
@@ -261,9 +307,6 @@ $(document).ready(function () {
         draggable: false,
         modal: true,
         title: 'Room list',
-        buttons: {
-            
-        }
     });
 
     $('#leave').click(function () {
