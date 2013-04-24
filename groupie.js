@@ -138,6 +138,7 @@ var Groupie = {
         var room = Strophe.getBareJidFromJid(from);
         var nick = Strophe.getResourceFromJid(from);
         Groupie.student_nickname = nick;
+        console.log("private message");
         // make sure this message is from the correct room
         if (room === Groupie.room) {
             var body = $(message).children('body').text();
@@ -431,11 +432,16 @@ $(document).bind('user_left', function (ev, nick) {
     Groupie.add_message("<div class='notice'>*** " + nick +
                         " left.</div>");
 
+    if (nick == Groupie.teacher_nickname) {
+        $('#leave').trigger('click');
+        return;
+    };
     console.log("old position " + position);
     var before = true;
     for (var item in Groupie.participants ){
         if (item == nick){
             before = false;
+            continue;
         }
         if (Groupie.nickname == item) {
             if (!before) {
