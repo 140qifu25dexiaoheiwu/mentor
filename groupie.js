@@ -7,10 +7,10 @@ var Groupie = {
 
     joined: null,
     participants: null,
-    position: null,
-    total: null,
-    teacher_nickname: null,
-    student_nickname: null,
+    position: null,//学生的位置
+    total: null,//教师加所有学生的总人数
+    teacher_nickname: null,//正在答疑教师的昵称
+    student_nickname: null,//正在提问学生的昵称
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -31,8 +31,12 @@ var Groupie = {
                 Groupie.participants[nick] = user_jid || true;
 
                 $('#participant-list').append('<li>' + nick + '</li>');
+                
+                //每出现一个人就总人数就加1
                 total++;
                 console.log(total);
+                
+                
                 if (Groupie.joined) {
                     $(document).trigger('user_joined', nick);
                 }
@@ -57,8 +61,7 @@ var Groupie = {
                     if ($(presence).find("status[code='210']").length > 0) {
                         Groupie.nickname = Strophe.getResourceFromJid(from);
                     }
-
-                    position = total;
+                    
                     // room join complete
                     $(document).trigger("room_joined");
                 }
@@ -444,6 +447,9 @@ $(document).bind('disconnected', function () {
 });
 
 $(document).bind('room_joined', function () {
+    //如果是当前用户就记录该用户的位置
+    position = total;
+    
     Groupie.joined = true;
 
     $('#leave').removeAttr('disabled');
