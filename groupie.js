@@ -191,7 +191,7 @@ var Groupie = {
                 name = jid.split('@')[0];
             } //if
 
-            var element = $("<li id=" + jid + ">" + Strophe.getNodeFromJid(jid) + "</li>");
+            var element = $("<button id=" + jid + ">" + Strophe.getNodeFromJid(jid) + "</button>");
             $("#room_panel").append(element);
         });
 
@@ -200,7 +200,7 @@ var Groupie = {
             alert("啊哦，目前没有老师答疑");
         }else {
             var ul = document.getElementById('room_panel');
-            var lis = ul.getElementsByTagName('li');
+            var lis = ul.getElementsByTagName('button');
                 for(var i=0;i<lis.length;i++){
                     lis[i].onclick = function(){
                     Groupie.room = this.id;
@@ -212,40 +212,6 @@ var Groupie = {
                 } 
             $("#rooms_dialog").dialog('open');
         };
-    },
-
-    insert_contact: function (elem) {
-        var jid = elem.find('.roster-jid').text();
-        var pres = Gab.presence_value(elem.find('.roster-contact'));
-        
-        var contacts = $('#roster-area li');
-
-        if (contacts.length > 0) {
-            var inserted = false;
-            contacts.each(function () {
-                var cmp_pres = Gab.presence_value(
-                    $(this).find('.roster-contact'));
-                var cmp_jid = $(this).find('.roster-jid').text();
-
-                if (pres > cmp_pres) {
-                    $(this).before(elem);
-                    inserted = true;
-                    return false;
-                } else if (pres === cmp_pres) {
-                    if (jid < cmp_jid) {
-                        $(this).before(elem);
-                        inserted = true;
-                        return false;
-                    }
-                }
-            });
-
-            if (!inserted) {
-                $('#roster-area ul').append(elem);
-            }
-        } else {
-            $('#roster-area ul').append(elem);
-        }
     },
 
     send_msg: function (to, body) {
@@ -306,7 +272,7 @@ $(document).ready(function () {
         autoOpen: false,
         draggable: false,
         modal: true,
-        title: 'Room list',
+        title: '在线教师列表',
     });
 
     $('#leave').click(function () {
