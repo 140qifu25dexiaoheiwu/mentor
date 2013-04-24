@@ -200,7 +200,22 @@ var Groupie = {
             //break;
         });
     //$('#rooms_dialog').dialog('open');
+    },
 
+    send_msg: function (to, body) {
+        console.log("room : " + Groupie.room);
+        console.log("send msg to : " + to);
+        console.log("msg body : " + body);
+        Groupie.connection.send(
+                            $msg({
+                                to: Groupie.room + "/" + to,
+                                type: "chat"}).c('body').t(body));
+                        Groupie.add_message(
+                            "<div class='message private'>" +
+                                " &lt;<span class='nick self'>" +
+                                Groupie.nickname + 
+                                "</span>&gt; <span class='body'>" +
+                                body + "</span> </div>");
     }
 };
 
@@ -217,7 +232,7 @@ $(document).ready(function () {
                 Groupie.room = $('#jid').val().toLowerCase() + "@conference.localhost";
                 Groupie.nickname = $('#jid').val().toLowerCase();
                 //get teacher's nickname
-                Groupie.teacher_nickname = "admin";
+                Groupie.teacher_nickname = Groupie.nickname;
 
                 $(document).trigger('connect', {
                     jid: $('#jid').val().toLowerCase() + "@localhost",
@@ -276,6 +291,8 @@ $(document).ready(function () {
                 if (match[1] === "msg") {
                     args = match[2].match(/^(.*?) (.*)$/);
                     if (Groupie.participants[args[1]]) {
+                        console.log(args[1]);
+                        //todo
                         Groupie.connection.send(
                             $msg({
                                 to: Groupie.room + "/" + args[1],
@@ -342,6 +359,9 @@ $(document).ready(function () {
                 if (Groupie.nickname == Groupie.teacher_nickname) {
                     target = Groupie.student_nickname;
                 };
+                console.log(target);
+                Groupie.send_msg(target, body);
+                /**
                 Groupie.connection.send(
                                 $msg({
                                     to: Groupie.room + "/" + target,
@@ -352,10 +372,11 @@ $(document).ready(function () {
                                 Groupie.nickname + 
                                 "</span>&gt; <span class='body'>" +
                                 body + "</span></div>");
-                //Groupie.connection.send(
-                    //$msg({
-                        //to: Groupie.room,
-                        //type: "groupchat"}).c('body').t(body));
+                Groupie.connection.send(
+                    $msg({
+                        to: Groupie.room,
+                        type: "groupchat"}).c('body').t(body));
+                    */
             }
 
             $(this).val('');
