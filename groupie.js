@@ -250,7 +250,7 @@ var Groupie = {
         });
 
         $('#password').val('');
-        $(this).dialog('close');
+        $('#login_dialog').dialog('close');
     }
 };
 
@@ -259,7 +259,7 @@ $(document).ready(function () {
         autoOpen: true,
         draggable: false,
         modal: true,
-        title: 'Join a Room',
+        title: '登陆',
         buttons: {
             "教师登陆": function () {
                 Groupie.room = $('#jid').val().toLowerCase() + "@conference.localhost";
