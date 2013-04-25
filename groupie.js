@@ -12,6 +12,7 @@ var Groupie = {
     total: null,//教师加所有学生的总人数
     teacher_nickname: null,//正在答疑教师的昵称
     student_nickname: null,//正在提问学生的昵称
+    has_login : false,
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -210,6 +211,7 @@ var Groupie = {
         if (count == 0) {
             Groupie.connection.disconnect();
             alert("啊哦，目前没有老师答疑");
+            Groupie.has_login = true;
         }else {
             var ul = document.getElementById('room_panel');
             var lis = ul.getElementsByTagName('button');
@@ -269,6 +271,7 @@ var Groupie = {
         } else if (status === Strophe.Status.SBMTFAIL) {
             console.log("submit failed");
             alert('注册失败，请尝试使用其他用户名');
+            $('#password').val('');
             $(document).trigger('disconnected');
         } else {
             // every other status a connection.connect would receive
@@ -431,6 +434,7 @@ $(document).bind('connect', function (ev, data) {
         data.jid, data.password,
         function (status) {
             console.log("connect status : " + status);
+            console.log(" has login : " + Groupie.has_login);
             if (status === Strophe.Status.CONNECTED) {
                 //如果是学生登陆，则列出可用房间列表
                 if (Groupie.room == null) {
@@ -439,7 +443,10 @@ $(document).bind('connect', function (ev, data) {
                     $(document).trigger('connected');                    
                 };
             } else if (status === Strophe.Status.DISCONNECTED) {
-                alert('啊哦，你好像不是教师，请使用学生登陆。');
+                console.log("has login : " + Groupie.has_login);
+                if (!Groupie.has_login) {
+                    alert('啊哦，你好像不是教师，请使用学生登陆。');                    
+                };
                 $(document).trigger('disconnected');
             } else if (status === Strophe.Status.AUTHFAIL) {
                 alert('请使用正确的用户名和密码登陆。');
@@ -472,6 +479,7 @@ $(document).bind('connected', function () {
 
 $(document).bind('disconnected', function () {
     Groupie.connection = null;
+    Groupie.has_login = false;
     $('#room-name').empty();
     $('#room-topic').empty();
     $('#participant-list').empty();
@@ -484,6 +492,7 @@ $(document).bind('room_joined', function () {
     position = total;
     
     Groupie.joined = true;
+    Groupie.has_login = true;
 
     $('#leave').removeAttr('disabled');
     $('#room-name').text(Groupie.room);
