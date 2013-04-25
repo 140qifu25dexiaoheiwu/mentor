@@ -294,7 +294,7 @@ $(document).ready(function () {
                 Groupie.login();
             },
 
-            "注册": function () {
+            "学生注册": function () {
                 Groupie.room = null;
                 Groupie.teacher_nickname = null;
                 var username = $('#jid').val().toLowerCase();
