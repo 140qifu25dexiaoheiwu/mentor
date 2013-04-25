@@ -2,14 +2,16 @@ var Groupie = {
     connection: null,
     room: null,
     nickname: null,
-
-    register_username: null,
     register_password: null,
 
     NS_MUC: "http://jabber.org/protocol/muc",
 
     joined: null,
     participants: null,
+    position: null,//学生的位置
+    total: null,//教师加所有学生的总人数
+    teacher_nickname: null,//正在答疑教师的昵称
+    student_nickname: null,//正在提问学生的昵称
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -28,8 +30,14 @@ var Groupie = {
                 // add to participant list
                 var user_jid = $(presence).find('item').attr('jid');
                 Groupie.participants[nick] = user_jid || true;
-                $('#participant-list').append('<li>' + nick + '</li>');
 
+                $('#participant-list').append('<li>' + nick + '</li>');
+                
+                //每出现一个人就总人数就加1
+                total++;
+                console.log(total);
+                
+                
                 if (Groupie.joined) {
                     $(document).trigger('user_joined', nick);
                 }
@@ -54,7 +62,7 @@ var Groupie = {
                     if ($(presence).find("status[code='210']").length > 0) {
                         Groupie.nickname = Strophe.getResourceFromJid(from);
                     }
-
+                    
                     // room join complete
                     $(document).trigger("room_joined");
                 }
@@ -133,32 +141,134 @@ var Groupie = {
         var from = $(message).attr('from');
         var room = Strophe.getBareJidFromJid(from);
         var nick = Strophe.getResourceFromJid(from);
+        
+        //如果是老师，则记录学生的昵称
+        if (Groupie.nickname == Groupie.teacher_nickname) {
+            Groupie.student_nickname = nick;
+        }
+        
 
         // make sure this message is from the correct room
         if (room === Groupie.room) {
             var body = $(message).children('body').text();
             Groupie.add_message("<div class='message private'>" +
-                                "@@ &lt;<span class='nick'>" +
+                                "&lt;<span class='nick'>" +
                                 nick + "</span>&gt; <span class='body'>" +
-                                body + "</span> @@</div>");
+                                body + "</span></div>");
             
         }
 
         return true;
     },
 
+    //更新学生的位置
+    on_position_change: function () {
+        //teacher in the first place
+        if (Groupie.nickname != Groupie.teacher_nickname){
+          if (position == 2) {
+            Groupie.add_message("<div class='notice'>同学，你正处于第1位，可以开始提问 </div>");
+            Groupie.connection.send(
+                                $msg({
+                                    to: Groupie.room + "/" + Groupie.teacher_nickname,
+                                    type: "chat"}).c('body').t("老师好，我是" + Groupie.nickname));
+          } else{
+            Groupie.add_message("<div class='notice'>同学，你正处于第"+ (position-1) + "位，请耐心等待</div>");
+          };  
+        }
+    },
+
+    //列出所有可用房间列表
+    listRooms: function () {
+        var iq = $iq({to: "conference.localhost",
+                      //from: "admin@localhost",//Groupie.participants[Groupie.nickname],
+                      type: "get"})
+            .c("query",{xmlns: Strophe.NS.DISCO_ITEMS}); 
+        Groupie.connection.sendIQ(iq, Groupie.showRoom, Groupie.error_cb, 600);        
+    },
+
+    error_cb: function (iq) {
+        console.log("list_rooms error : " + iq);
+    },
+
+    showRoom: function (iq) {
+        //计数可用房间数量
+        var count = 0;
+        $('item', iq).each(function (index, value) {
+            count++;
+            var name = $(value).attr('name');
+            var jid = $(value).attr('jid');
+            
+            if (typeof name == 'undefined') {
+                name = jid.split('@')[0];
+            } //if
+
+            var element = $("<button id=" + jid + ">" + Strophe.getNodeFromJid(jid) + "</button></br>");
+            $("#room_panel").append(element);
+        });
+
+        //初始化房间列表对话框
+        if (count == 0) {
+            Groupie.connection.disconnect();
+            alert("啊哦，目前没有老师答疑");
+        }else {
+            var ul = document.getElementById('room_panel');
+            var lis = ul.getElementsByTagName('button');
+                for(var i=0;i<lis.length;i++){
+                    lis[i].onclick = function(){
+                    Groupie.room = this.id;
+                    Groupie.teacher_nickname = Strophe.getNodeFromJid(Groupie.room);
+                    $(document).trigger('connected');
+                    $("#rooms_dialog").dialog('close');
+                    $("#room_panel").empty();                 
+                   }
+                } 
+            $("#rooms_dialog").dialog('open');
+        };
+    },
+
+    //发送消息body给对方to
+    send_msg: function (to, body) {
+        console.log("room : " + Groupie.room);
+        console.log("send msg to : " + to);
+        console.log("msg body : " + body);
+        Groupie.connection.send(
+                            $msg({
+                                to: Groupie.room + "/" + to,
+                                type: "chat"}).c('body').t(body));
+                        Groupie.add_message(
+                            "<div class='message private'>" +
+                                " &lt;<span class='nick self'>" +
+                                Groupie.nickname + 
+                                "</span>&gt; <span class='body'>" +
+                                body + "</span> </div>");
+    },
+    
+    login: function () {
+        Groupie.nickname = $('#jid').val().toLowerCase();
+        $(document).trigger('connect', {
+                    jid: $('#jid').val().toLowerCase() + "@localhost",
+                    password: $('#password').val()
+        });
+
+        $('#password').val('');
+        $('#login_dialog').dialog('close');
+    },
+
     on_register: function (status) {
         console.log(status);
         if (status === Strophe.Status.REGISTER) {
-            Groupie.connection.register.fields.username = Groupie.register_username;
-            Groupie.connection.register.fields.password = Groupie.register_username;
+            Groupie.connection.register.fields.username = Groupie.nickname;
+            Groupie.connection.register.fields.password = Groupie.register_password;
             Groupie.connection.register.submit();
         } else if (status === Strophe.Status.REGISTERED) {
             console.log("registered!");
+            Groupie.login();
             //Groupie.connection.authenticate();
-            $('#login_dialog').dialog('open');
-        } else if (status === Strophe.Status.CONNECTED) {
-            console.log("logged in!");
+            //$('#login_dialog').dialog('open');
+        } else if (status === Strophe.Status.SBMTFAIL) {
+            console.log("submit failed");
+            alert('注册失败，请尝试使用其他用户名');
+            $(document).trigger('disconnected');
         } else {
             // every other status a connection.connect would receive
         }
@@ -166,34 +276,30 @@ var Groupie = {
 };
 
 $(document).ready(function () {
-
-    $('#welcome_dialog').dialog({
+    $('#login_dialog').dialog({
         autoOpen: true,
         draggable: false,
         modal: true,
-        title: 'Welcome',
+        title: '登陆',
         buttons: {
-            "register": function () {
-                $(this).dialog('close');
-                $('#register_dialog').dialog('open');
+            "教师登陆": function () {
+                Groupie.room = $('#jid').val().toLowerCase() + "@conference.localhost";
+                Groupie.teacher_nickname = $('#jid').val().toLowerCase();
+                Groupie.login();
             },
 
-            "login": function () {
-                $(this).dialog('close');
-                $('#login_dialog').dialog('open');
-            }
-        }
-    });
+            "学生登陆": function () {
+                Groupie.room = null;
+                Groupie.teacher_nickname = null;
+                Groupie.login();
+            },
 
-    $('#register_dialog').dialog({
-        autoOpen: false,
-        draggable: false,
-        modal: 'Register',
-        buttons: {
-            "register": function () {
-                var username = $('#username').val().toLowerCase();
+            "注册": function () {
+                Groupie.room = null;
+                Groupie.teacher_nickname = null;
+                var username = $('#jid').val().toLowerCase();
                 if( username.length > 0 ){
-                    Groupie.register_username = username;
+                    Groupie.nickname = username;
                     Groupie.register_password = $('#password').val();
                     Groupie.connection = new Strophe.Connection('http://localhost/http-bind');
                     Groupie.connection.register.connect("localhost", Groupie.on_register);
@@ -205,25 +311,11 @@ $(document).ready(function () {
         }
     });
 
-    $('#login_dialog').dialog({
+    $('#rooms_dialog').dialog({
         autoOpen: false,
         draggable: false,
         modal: true,
-        title: 'Join a Room',
-        buttons: {
-            "Join": function () {
-                Groupie.room = $('#room').val().toLowerCase();
-                Groupie.nickname = $('#nickname').val();
-
-                $(document).trigger('connect', {
-                    jid: $('#jid').val().toLowerCase(),
-                    password: $('#password').val()
-                });
-
-                $('#password').val('');
-                $(this).dialog('close');
-            }
-        }
+        title: '在线教师列表',
     });
 
     $('#leave').click(function () {
@@ -237,6 +329,12 @@ $(document).ready(function () {
     $('#input').keypress(function (ev) {
         if (ev.which === 13) {
             ev.preventDefault();
+            
+            //正在排队的学生暂时不能提问
+            if (position > 2) {
+                alert('对不起，你现在还不能提问，请耐心等待。');
+                return;
+            };
 
             var body = $(this).val();
 
@@ -246,6 +344,8 @@ $(document).ready(function () {
                 if (match[1] === "msg") {
                     args = match[2].match(/^(.*?) (.*)$/);
                     if (Groupie.participants[args[1]]) {
+                        console.log(args[1]);
+                        //todo
                         Groupie.connection.send(
                             $msg({
                                 to: Groupie.room + "/" + args[1],
@@ -308,10 +408,13 @@ $(document).ready(function () {
                             "</div>");
                 }
             } else {
-                Groupie.connection.send(
-                    $msg({
-                        to: Groupie.room,
-                        type: "groupchat"}).c('body').t(body));
+                //如果是老师，则将消息发送给学生，否则发送消息给老师
+                var target = Groupie.teacher_nickname;
+                if (Groupie.nickname == Groupie.teacher_nickname) {
+                    target = Groupie.student_nickname;
+                };
+                console.log(target);
+                Groupie.send_msg(target, body);
             }
 
             $(this).val('');
@@ -322,13 +425,17 @@ $(document).ready(function () {
 $(document).bind('connect', function (ev, data) {
     Groupie.connection = new Strophe.Connection(
         'http://localhost/http-bind');
-console.log('con');
+
     Groupie.connection.connect(
         data.jid, data.password,
         function (status) {
-            console.log(status);
             if (status === Strophe.Status.CONNECTED) {
-                $(document).trigger('connected');
+                //如果是学生登陆，则列出可用房间列表
+                if (Groupie.room == null) {
+                    Groupie.listRooms();
+                } else{
+                    $(document).trigger('connected');                    
+                };
             } else if (status === Strophe.Status.DISCONNECTED) {
                 $(document).trigger('disconnected');
             }
@@ -336,9 +443,11 @@ console.log('con');
 });
 
 $(document).bind('connected', function () {
-    console('connected')
     Groupie.joined = false;
     Groupie.participants = {};
+    //初始化人员总数和位置为0
+    total = 0;
+    position = 0;
 
     Groupie.connection.send($pres().c('priority').t('-1'));
     
@@ -365,12 +474,16 @@ $(document).bind('disconnected', function () {
 });
 
 $(document).bind('room_joined', function () {
+    //如果是当前用户就记录该用户的位置
+    position = total;
+    
     Groupie.joined = true;
 
     $('#leave').removeAttr('disabled');
     $('#room-name').text(Groupie.room);
 
-    Groupie.add_message("<div class='notice'>*** Room joined.</div>")
+    Groupie.add_message("<div class='notice'>*** Room joined.</div>");
+    Groupie.on_position_change();
 });
 
 $(document).bind('user_joined', function (ev, nick) {
@@ -381,4 +494,33 @@ $(document).bind('user_joined', function (ev, nick) {
 $(document).bind('user_left', function (ev, nick) {
     Groupie.add_message("<div class='notice'>*** " + nick +
                         " left.</div>");
+    //如果是老师退出，则所有学生都退出
+    if (nick == Groupie.teacher_nickname) {
+        $('#leave').trigger('click');
+        return;
+    };
+    
+    //如果是学生退出，则更新所有学生的位置，排在该学生之前的学生位置不变，之后的每人向前一位
+    console.log("old position " + position);
+    var before = true;
+    for (var item in Groupie.participants ){
+        if (item == nick){
+            before = false;
+            continue;
+        }
+        if (Groupie.nickname == item) {
+            if (!before) {
+                position--;
+            };
+            break;
+        };
+    }
+    console.log("new position " + position);
+    Groupie.on_position_change();
+    
+    //删除已退出的学生
+    delete Groupie.participants[nick];
+    //总人数减1
+    total--;
+
 });
