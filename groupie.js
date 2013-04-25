@@ -439,7 +439,7 @@ $(document).bind('connect', function (ev, data) {
                     $(document).trigger('connected');                    
                 };
             } else if (status === Strophe.Status.DISCONNECTED) {
-                alert('啊哦，你好像不是教师，请使用学生登陆。');
+                //alert('啊哦，你好像不是教师，请使用学生登陆。');
                 $(document).trigger('disconnected');
             } else if (status === Strophe.Status.AUTHFAIL) {
                 alert('请使用正确的用户名和密码登陆。');
