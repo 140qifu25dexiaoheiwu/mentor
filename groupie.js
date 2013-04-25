@@ -245,6 +245,7 @@ var Groupie = {
     
     login: function () {
         Groupie.nickname = $('#jid').val().toLowerCase();
+
         $(document).trigger('connect', {
                     jid: $('#jid').val().toLowerCase() + "@localhost",
                     password: $('#password').val()
@@ -305,7 +306,7 @@ $(document).ready(function () {
                     Groupie.connection.register.connect("localhost", Groupie.on_register);
                     $(this).dialog('close');
                 }else {
-                    alert('please input username');
+                    alert('请输入用户名和密码');
                 }
             }
         }
@@ -429,6 +430,7 @@ $(document).bind('connect', function (ev, data) {
     Groupie.connection.connect(
         data.jid, data.password,
         function (status) {
+            console.log("connect status : " + status);
             if (status === Strophe.Status.CONNECTED) {
                 //如果是学生登陆，则列出可用房间列表
                 if (Groupie.room == null) {
@@ -437,6 +439,10 @@ $(document).bind('connect', function (ev, data) {
                     $(document).trigger('connected');                    
                 };
             } else if (status === Strophe.Status.DISCONNECTED) {
+                alert('啊哦，你好像不是教师，请使用学生登陆。');
+                $(document).trigger('disconnected');
+            } else if (status === Strophe.Status.AUTHFAIL) {
+                alert('请使用正确的用户名和密码登陆。');
                 $(document).trigger('disconnected');
             }
         });
