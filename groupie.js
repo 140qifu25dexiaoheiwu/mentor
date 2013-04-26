@@ -210,7 +210,7 @@ var Groupie = {
         //初始化房间列表对话框
         if (count == 0) {
             Groupie.connection.disconnect();
-            alert("啊哦，目前没有老师答疑");
+            alert("目前没有老师答疑");
             Groupie.has_login = true;
         }else {
             var ul = document.getElementById('room_panel');
@@ -445,7 +445,7 @@ $(document).bind('connect', function (ev, data) {
             } else if (status === Strophe.Status.DISCONNECTED) {
                 console.log("has login : " + Groupie.has_login);
                 if (!Groupie.has_login) {
-                    alert('啊哦，你好像不是教师，请使用学生登陆。');                    
+                    alert('你好像不是教师，请使用学生登陆。');                    
                 };
                 $(document).trigger('disconnected');
             } else if (status === Strophe.Status.AUTHFAIL) {
