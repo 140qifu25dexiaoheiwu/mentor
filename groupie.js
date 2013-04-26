@@ -497,18 +497,18 @@ $(document).bind('room_joined', function () {
     $('#leave').removeAttr('disabled');
     $('#room-name').text(Groupie.room);
 
-    Groupie.add_message("<div class='notice'>*** 欢迎来到教师答疑系统.</div>");
+    Groupie.add_message("<div class='notice'>你好，欢迎来到教师答疑系统.</div>");
     Groupie.on_position_change();
 });
 
 $(document).bind('user_joined', function (ev, nick) {
     Groupie.add_message("<div class='notice'>*** " + nick +
-                         " joined.</div>");
+                         " 已加入排队.</div>");
 });
 
 $(document).bind('user_left', function (ev, nick) {
     Groupie.add_message("<div class='notice'>*** " + nick +
-                        " left.</div>");
+                        " 离开了.</div>");
     //如果是老师退出，则所有学生都退出
     if (nick == Groupie.teacher_nickname) {
         $('#leave').trigger('click');
