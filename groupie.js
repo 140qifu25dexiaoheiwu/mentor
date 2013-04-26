@@ -497,7 +497,7 @@ $(document).bind('room_joined', function () {
     $('#leave').removeAttr('disabled');
     $('#room-name').text(Groupie.room);
 
-    Groupie.add_message("<div class='notice'>*** Room joined.</div>");
+    Groupie.add_message("<div class='notice'>*** 欢迎来到教师答疑系统.</div>");
     Groupie.on_position_change();
 });
 
