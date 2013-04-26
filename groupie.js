@@ -285,6 +285,7 @@ $(document).ready(function () {
         draggable: false,
         modal: true,
         title: '登陆',
+        width: 350,
         buttons: {
             "教师登陆": function () {
                 Groupie.room = $('#jid').val().toLowerCase() + "@conference.localhost";
