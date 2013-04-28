@@ -180,18 +180,21 @@ var Groupie = {
 
     //列出所有可用房间列表
     listRooms: function () {
+        console.log(Gab.online_users);
+
         var iq = $iq({to: "conference.localhost",
                       //from: "admin@localhost",//Groupie.participants[Groupie.nickname],
                       type: "get"})
             .c("query",{xmlns: Strophe.NS.DISCO_ITEMS}); 
-        Groupie.connection.sendIQ(iq, Groupie.showRoom, Groupie.error_cb, 600);        
+        Groupie.connection.sendIQ(iq, Groupie.show_rooms, Groupie.error_cb);        
     },
 
     error_cb: function (iq) {
         console.log("list_rooms error : " + iq);
     },
 
-    showRoom: function (iq) {
+    show_rooms: function (iq) {
+        console.log('show Rooms');
         //计数可用房间数量
         var count = 0;
         $('item', iq).each(function (index, value) {
@@ -203,7 +206,9 @@ var Groupie = {
                 name = jid.split('@')[0];
             } //if
 
-            var element = $("<button id=" + jid + ">" + Strophe.getNodeFromJid(jid) + "</button></br>");
+            var color = "blue";
+            if (Gab.online_users[Strophe.getNodeFromJid(jid)]) { color = "red"};
+            var element = $("<button id=" + jid + "><font color=" + color + ">" + Strophe.getNodeFromJid(jid) + "</font></button></br>");
             $("#room_panel").append(element);
         });
 
@@ -217,15 +222,21 @@ var Groupie = {
             var lis = ul.getElementsByTagName('button');
                 for(var i=0;i<lis.length;i++){
                     lis[i].onclick = function(){
-                    Groupie.room = this.id;
-                    Groupie.teacher_nickname = Strophe.getNodeFromJid(Groupie.room);
-                    $(document).trigger('connected');
-                    $("#rooms_dialog").dialog('close');
-                    $("#room_panel").empty();                 
+                        var name = Strophe.getNodeFromJid(this.id);
+                        if (Gab.online_users[name]) {
+                            Groupie.room = this.id;
+                            Groupie.teacher_nickname = name;
+                            $(document).trigger('connected');
+                            $("#rooms_dialog").dialog('close');
+                            $("#room_panel").empty(); 
+                        } else{
+                            alert("teacher " + name + " is offline.");
+                        };
                    }
                 } 
             $("#rooms_dialog").dialog('open');
         };
+        return false;
     },
 
     //发送消息body给对方to
@@ -277,6 +288,7 @@ var Groupie = {
             // every other status a connection.connect would receive
         }
     }
+
 };
 
 $(document).ready(function () {
@@ -434,12 +446,10 @@ $(document).bind('connect', function (ev, data) {
     Groupie.connection.connect(
         data.jid, data.password,
         function (status) {
-            console.log("connect status : " + status);
-            console.log(" has login : " + Groupie.has_login);
             if (status === Strophe.Status.CONNECTED) {
                 //如果是学生登陆，则列出可用房间列表
                 if (Groupie.room == null) {
-                    Groupie.listRooms();
+                    $(document).trigger('student_connect');                    
                 } else{
                     $(document).trigger('connected');                    
                 };
