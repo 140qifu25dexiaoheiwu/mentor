@@ -522,7 +522,7 @@ $(document).bind('disconnected', function () {
 $(document).bind('room_joined', function () {
     //如果是当前用户就记录该用户的位置
     position = total;
-    if (position < 2) {
+    if (position < 2 && Groupie.teacher_nickname != Groupie.nickname) {
         $('#leave').trigger('click');
         return;
     };
