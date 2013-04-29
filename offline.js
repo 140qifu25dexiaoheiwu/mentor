@@ -89,6 +89,8 @@ var Gab = {
 };
 
 $(document).ready(function () {
+    $('#participants').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+    $('#chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
 
     $('#offline-chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
 
