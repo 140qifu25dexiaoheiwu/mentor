@@ -36,7 +36,7 @@ h1 {
 
 #chat-area {
     float: left;
-    width: 500px;
+    width: 400px;
 }
 
 #chat {
@@ -47,7 +47,7 @@ h1 {
 
 #participants {
     float: left;
-    width: 200px;
+    width: 150px;
     height: 500px;
     overflow: auto;
 }
@@ -55,7 +55,7 @@ h1 {
 #offline-chat-area {
     margin-top: 0px;
     float: left;
-    width: 500px;
+    width: 350px;
     height: 400px;
 }
 
