@@ -223,6 +223,7 @@ var Groupie = {
                 for(var i=0;i<lis.length;i++){
                     lis[i].onclick = function(){
                         var name = Strophe.getNodeFromJid(this.id);
+                        Groupie.teacher_nickname = name;
                         if (Online.online_users[name]) {
                             Groupie.room = this.id;
                             Groupie.teacher_nickname = name;
@@ -230,7 +231,8 @@ var Groupie = {
                             $("#rooms_dialog").dialog('close');
                             $("#room_panel").empty(); 
                         } else{
-                            alert("teacher " + name + " is offline.");
+                            document.getElementById('teacher_name').innerHTML = Groupie.teacher_nickname + ' ';
+                            $('#chat_dialog').dialog('open');
                         };
                    }
                 } 
@@ -264,6 +266,7 @@ var Groupie = {
                     jid: Groupie.nickname + "@localhost",
                     password: Groupie.user_password
         });
+        Groupie.on_offline_msg(false);
 
         $('#password').val('');
         $('#login_dialog').dialog('close');
@@ -288,6 +291,14 @@ var Groupie = {
         } else {
             // every other status a connection.connect would receive
         }
+    },
+
+    on_offline_msg: function (need_receive_msg) {
+        Gab.need_receive_msg = need_receive_msg;
+        $(document).trigger('offline_connect', {
+                    jid: Groupie.nickname + "@localhost",
+                    password: Groupie.user_password
+        });
     }
 
 };
@@ -346,16 +357,16 @@ $(document).ready(function () {
         if (Gab.connection != null) {
             Gab.connection.disconnect();
         };
-        Online.connection.disconnect();
+        if (Online.connection != null) {
+            Online.connection.disconnect();            
+        };
+
 
     });
 
     $('#offline_msg').click(function () {
         $('#offline_msg').attr('disabled', 'disabled');
-        $(document).trigger('offline_connect', {
-                    jid: Groupie.nickname + "@localhost",
-                    password: Groupie.user_password
-        });        
+        Groupie.on_offline_msg(true);       
     });
 
     $('#input').keypress(function (ev) {
@@ -467,7 +478,7 @@ $(document).bind('connect', function (ev, data) {
                     $(document).trigger('connected');                    
                 };
             } else if (status === Strophe.Status.DISCONNECTED) {
-                console.log('has_login : ' + Groupie.has_login);
+                console.log('Groupie disconnected');
                 if (!Groupie.has_login) {
                     alert('你好像不是教师，请使用学生登陆。');                    
                 };
@@ -518,6 +529,7 @@ $(document).bind('room_joined', function () {
     Groupie.has_login = true;
 
     $('#leave').removeAttr('disabled');
+    $('#offline_msg').removeAttr('disabled');
     $('#room-name').text("教师答疑" + Groupie.teacher_nickname);
 
     Groupie.add_message("<div class='notice'>你好，欢迎来到教师答疑系统.</div>");

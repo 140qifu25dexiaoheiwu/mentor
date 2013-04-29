@@ -121,12 +121,27 @@ $(document).ready(function () {
         }
     });
 
-/**
-    $('#disconnect').click(function () {
-        Gab.connection.disconnect();
-        Gab.connection = null;
+    $('#chat_dialog').dialog({
+        autoOpen: false,
+        draggable: false,
+        modal: true,
+        title: 'Leave offline message',
+        buttons: {
+            "send": function () {
+
+                var body = $('#chat-jid').val();
+
+                var message = $msg({to: Groupie.teacher_nickname + "@localhost" ,
+                                    "type": "chat"})
+                    .c('body').t(body).up()
+                    .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
+                Groupie.connection.send(message);            
+            
+                $('#chat-jid').val('');
+                $(this).dialog('close');
+            }
+        }
     });
-*/
 });
 
 $(document).bind('offline_connect', function (ev, data) {
@@ -149,6 +164,7 @@ $(document).bind('offline_connected', function () {
     Gab.connection.addHandler(Gab.on_message,
                               null, "message", "chat");
     Gab.connection.send($pres());
+    
 });
 
 $(document).bind('offline_disconnected', function () {
