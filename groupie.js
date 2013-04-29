@@ -34,7 +34,9 @@ var Groupie = {
                 var user_jid = $(presence).find('item').attr('jid');
                 Groupie.participants[nick] = user_jid || true;
 
-                $('#participant-list').append('<li>' + nick + '</li>');
+                if (Groupie.teacher_nickname != nick) {
+                    $('#participant-list').append('<li>' + nick + '</li>');
+                };
                 
                 //每出现一个人就总人数就加1
                 total++;                
@@ -340,6 +342,7 @@ $(document).ready(function () {
     });
 
     $('#leave').click(function () {
+        console.log('trigger leave click');
         $('#leave').attr('disabled', 'disabled');
         Groupie.connection.send(
             $pres({to: Groupie.room + "/" + Groupie.nickname,
@@ -519,6 +522,10 @@ $(document).bind('disconnected', function () {
 $(document).bind('room_joined', function () {
     //如果是当前用户就记录该用户的位置
     position = total;
+    if (position < 2) {
+        $('#leave').trigger('click');
+        return;
+    };
     
     Groupie.joined = true;
     Groupie.has_login = true;

@@ -8,8 +8,7 @@ var Gab = {
     },
 
     on_message: function (message) {
-        console.log('message');
-        console.log(message);
+        console.log('offline message ' + message);
 
         var full_jid = $(message).attr('from');
         var jid = Strophe.getBareJidFromJid(full_jid);
