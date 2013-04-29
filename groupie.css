@@ -47,6 +47,24 @@ h1 {
     overflow: auto;
 }
 
+#offline-chat-area {
+    margin-top: 10px;
+    float: left;
+    width: 500px;
+    height: 400px;
+}
+
+.chat-messages {
+    height: 280px;
+    border-bottom: solid 2px #ddd;
+    overflow: auto;
+}
+
+#chat-area input {
+    margin-top: 10px;
+    width: 95%;
+}
+
 #participant-list {
     list-style: none;
 }

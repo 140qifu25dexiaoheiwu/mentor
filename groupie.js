@@ -13,6 +13,8 @@ var Groupie = {
     teacher_nickname: null,//正在答疑教师的昵称
     student_nickname: null,//正在提问学生的昵称
     has_login : false,
+    
+    user_password: null,
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -35,9 +37,7 @@ var Groupie = {
                 $('#participant-list').append('<li>' + nick + '</li>');
                 
                 //每出现一个人就总人数就加1
-                total++;
-                console.log(total);
-                
+                total++;                
                 
                 if (Groupie.joined) {
                     $(document).trigger('user_joined', nick);
@@ -148,8 +148,9 @@ var Groupie = {
             Groupie.student_nickname = nick;
         }
         
+        console.log('message : ' + message);
 
-        // make sure this message is from the correct room
+         // make sure this message is from the correct room
         if (room === Groupie.room) {
             var body = $(message).children('body').text();
             Groupie.add_message("<div class='message private'>" +
@@ -180,7 +181,7 @@ var Groupie = {
 
     //列出所有可用房间列表
     listRooms: function () {
-        console.log(Gab.online_users);
+        console.log(Online.online_users);
 
         var iq = $iq({to: "conference.localhost",
                       //from: "admin@localhost",//Groupie.participants[Groupie.nickname],
@@ -194,7 +195,6 @@ var Groupie = {
     },
 
     show_rooms: function (iq) {
-        console.log('show Rooms');
         //计数可用房间数量
         var count = 0;
         $('item', iq).each(function (index, value) {
@@ -207,7 +207,7 @@ var Groupie = {
             } //if
 
             var color = "blue";
-            if (Gab.online_users[Strophe.getNodeFromJid(jid)]) { color = "red"};
+            if (Online.online_users[Strophe.getNodeFromJid(jid)]) { color = "red"};
             var element = $("<button id=" + jid + "><font color=" + color + ">" + Strophe.getNodeFromJid(jid) + "</font></button></br>");
             $("#room_panel").append(element);
         });
@@ -223,7 +223,7 @@ var Groupie = {
                 for(var i=0;i<lis.length;i++){
                     lis[i].onclick = function(){
                         var name = Strophe.getNodeFromJid(this.id);
-                        if (Gab.online_users[name]) {
+                        if (Online.online_users[name]) {
                             Groupie.room = this.id;
                             Groupie.teacher_nickname = name;
                             $(document).trigger('connected');
@@ -236,7 +236,6 @@ var Groupie = {
                 } 
             $("#rooms_dialog").dialog('open');
         };
-        return false;
     },
 
     //发送消息body给对方to
@@ -257,11 +256,13 @@ var Groupie = {
     },
     
     login: function () {
+        Groupie.has_login = false;
         Groupie.nickname = $('#jid').val().toLowerCase();
-
+        Groupie.user_password = $('#password').val();
+        
         $(document).trigger('connect', {
-                    jid: $('#jid').val().toLowerCase() + "@localhost",
-                    password: $('#password').val()
+                    jid: Groupie.nickname + "@localhost",
+                    password: Groupie.user_password
         });
 
         $('#password').val('');
@@ -340,7 +341,21 @@ $(document).ready(function () {
         Groupie.connection.send(
             $pres({to: Groupie.room + "/" + Groupie.nickname,
                    type: "unavailable"}));
+        Groupie.has_login = true;
         Groupie.connection.disconnect();
+        if (Gab.connection != null) {
+            Gab.connection.disconnect();
+        };
+        Online.connection.disconnect();
+
+    });
+
+    $('#offline_msg').click(function () {
+        $('#offline_msg').attr('disabled', 'disabled');
+        $(document).trigger('offline_connect', {
+                    jid: Groupie.nickname + "@localhost",
+                    password: Groupie.user_password
+        });        
     });
 
     $('#input').keypress(function (ev) {
@@ -361,7 +376,6 @@ $(document).ready(function () {
                 if (match[1] === "msg") {
                     args = match[2].match(/^(.*?) (.*)$/);
                     if (Groupie.participants[args[1]]) {
-                        console.log(args[1]);
                         //todo
                         Groupie.connection.send(
                             $msg({
@@ -430,7 +444,6 @@ $(document).ready(function () {
                 if (Groupie.nickname == Groupie.teacher_nickname) {
                     target = Groupie.student_nickname;
                 };
-                console.log(target);
                 Groupie.send_msg(target, body);
             }
 
@@ -454,7 +467,7 @@ $(document).bind('connect', function (ev, data) {
                     $(document).trigger('connected');                    
                 };
             } else if (status === Strophe.Status.DISCONNECTED) {
-                console.log("has login : " + Groupie.has_login);
+                console.log('has_login : ' + Groupie.has_login);
                 if (!Groupie.has_login) {
                     alert('你好像不是教师，请使用学生登陆。');                    
                 };
@@ -490,7 +503,6 @@ $(document).bind('connected', function () {
 
 $(document).bind('disconnected', function () {
     Groupie.connection = null;
-    Groupie.has_login = false;
     $('#room-name').empty();
     $('#room-topic').empty();
     $('#participant-list').empty();
@@ -506,7 +518,7 @@ $(document).bind('room_joined', function () {
     Groupie.has_login = true;
 
     $('#leave').removeAttr('disabled');
-    $('#room-name').text(Groupie.room);
+    $('#room-name').text("教师答疑" + Groupie.teacher_nickname);
 
     Groupie.add_message("<div class='notice'>你好，欢迎来到教师答疑系统.</div>");
     Groupie.on_position_change();
