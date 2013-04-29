@@ -20,6 +20,11 @@ h1 {
     margin-bottom: 15px;
 }
 
+#div-name {
+    font-size: 150%;
+    font-weight: bold;
+}
+
 #room-name {
     font-size: 150%;
     font-weight: bold;

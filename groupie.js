@@ -182,7 +182,7 @@ var Groupie = {
     //列出所有可用房间列表
     listRooms: function () {
         console.log(Online.online_users);
-
+        $('#leave').removeAttr('disabled');
         var iq = $iq({to: "conference.localhost",
                       //from: "admin@localhost",//Groupie.participants[Groupie.nickname],
                       type: "get"})
@@ -197,6 +197,7 @@ var Groupie = {
     show_rooms: function (iq) {
         //计数可用房间数量
         var count = 0;
+        $("#room_panel").empty();
         $('item', iq).each(function (index, value) {
             count++;
             var name = $(value).attr('name');
@@ -266,7 +267,6 @@ var Groupie = {
                     jid: Groupie.nickname + "@localhost",
                     password: Groupie.user_password
         });
-        Groupie.on_offline_msg(false);
 
         $('#password').val('');
         $('#login_dialog').dialog('close');
@@ -292,14 +292,6 @@ var Groupie = {
             // every other status a connection.connect would receive
         }
     },
-
-    on_offline_msg: function (need_receive_msg) {
-        Gab.need_receive_msg = need_receive_msg;
-        $(document).trigger('offline_connect', {
-                    jid: Groupie.nickname + "@localhost",
-                    password: Groupie.user_password
-        });
-    }
 
 };
 
@@ -366,7 +358,10 @@ $(document).ready(function () {
 
     $('#offline_msg').click(function () {
         $('#offline_msg').attr('disabled', 'disabled');
-        Groupie.on_offline_msg(true);       
+        $(document).trigger('offline_connect', {
+                    jid: Groupie.nickname + "@localhost",
+                    password: Groupie.user_password
+        });     
     });
 
     $('#input').keypress(function (ev) {
@@ -530,7 +525,7 @@ $(document).bind('room_joined', function () {
 
     $('#leave').removeAttr('disabled');
     $('#offline_msg').removeAttr('disabled');
-    $('#room-name').text("教师答疑" + Groupie.teacher_nickname);
+    $('#room-name').text('教师' + Groupie.teacher_nickname + '答疑');
 
     Groupie.add_message("<div class='notice'>你好，欢迎来到教师答疑系统.</div>");
     Groupie.on_position_change();
