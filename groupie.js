@@ -537,7 +537,7 @@ $(document).bind('connected', function () {
 
 $(document).bind('disconnected', function () {
     Groupie.connection = null;
-    $('#room-name').empty();
+    $('#room-name').text('在线答疑');
     $('#room-topic').empty();
     $('#participant-list').empty();
     $('#chat').empty();
