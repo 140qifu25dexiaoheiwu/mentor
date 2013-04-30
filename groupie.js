@@ -361,12 +361,12 @@ $(document).ready(function () {
         draggable: false,
         modal: true,
         buttons: {
-            "no": function() {
+            "退出": function() {
                 $(this).dialog('close');
                 Groupie.on_leave();
             },
 
-            "save": function() {
+            "保存": function() {
                 if($("#text_filename").val()==""){
                     alert('please type a filename');
                 }else {
