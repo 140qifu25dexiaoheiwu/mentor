@@ -12,6 +12,8 @@
     <script type="text/javascript" src='strophe.register.js'></script>
     <script type="text/javascript" src='online.js'></script>
     <script type="text/javascript" src='offline.js'></script>
+    <script type="text/javascript" src='FileSaver.js'></script>
+    <script type="text/javascript" src='Blob.js'></script>
     <link rel='stylesheet' href='groupie.css'>
     <script src='groupie.js'></script>
   </head>
@@ -67,5 +69,10 @@
       <label id='teacher_name'></label><input type='text' id='chat-jid'>
     </div>
 
+    <div id='save_dialog' class='hidden' title='save or not'>
+      <form id="text-options">
+        <label>Filename: <input type="text" class="filename" id="text_filename"/>.txt</label>
+      </form>
+    </div>
   </body>
 </html>

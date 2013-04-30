@@ -295,6 +295,21 @@ var Groupie = {
         }
     },
 
+    on_leave: function () {
+        $('#leave').attr('disabled', 'disabled');
+        Groupie.connection.send(
+            $pres({to: Groupie.room + "/" + Groupie.nickname,
+                   type: "unavailable"}));
+        Groupie.has_login = true;
+        Groupie.connection.disconnect();
+        if (Gab.connection != null) {
+            Gab.connection.disconnect();
+        };
+        if (Online.connection != null) {
+            Online.connection.disconnect();            
+        };
+    }
+
 };
 
 $(document).ready(function () {
@@ -341,22 +356,32 @@ $(document).ready(function () {
         title: '在线教师列表',
     });
 
+    $('#save_dialog').dialog({
+        autoOpen: false,
+        draggable: false,
+        modal: true,
+        buttons: {
+            "no": function() {
+                $(this).dialog('close');
+                Groupie.on_leave();
+            },
+
+            "save": function() {
+                if($("#text_filename").val()==""){
+                    alert('please type a filename');
+                }else {
+                    var blob = new Blob([$("#chat").text()],{type: "text/plain;charset=utf-8"});
+                    saveAs(blob,$("#text_filename").val() + ".txt");
+                    $(this).dialog('close');
+                    Groupie.on_leave();    
+                };
+            }
+        }
+    });
+
     $('#leave').click(function () {
         console.log('trigger leave click');
-        $('#leave').attr('disabled', 'disabled');
-        Groupie.connection.send(
-            $pres({to: Groupie.room + "/" + Groupie.nickname,
-                   type: "unavailable"}));
-        Groupie.has_login = true;
-        Groupie.connection.disconnect();
-        if (Gab.connection != null) {
-            Gab.connection.disconnect();
-        };
-        if (Online.connection != null) {
-            Online.connection.disconnect();            
-        };
-
-
+        $('#save_dialog').dialog('open');
     });
 
     $('#offline_msg').click(function () {
