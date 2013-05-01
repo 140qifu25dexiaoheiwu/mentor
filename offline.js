@@ -107,7 +107,7 @@ $(document).ready(function () {
                                 "type": "chat"})
                 .c('body').t(body).up()
                 .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
-            Gab.connection.send(message);
+            Groupie.connection.send(message);
 
             $(this).parent().find('.chat-messages').append(
                 "<div class='chat-message'>&lt;" +
@@ -127,9 +127,9 @@ $(document).ready(function () {
         autoOpen: false,
         draggable: false,
         modal: true,
-        title: 'Leave offline message',
+        title: '向老师发送离线留言',
         buttons: {
-            "send": function () {
+            "发送": function () {
 
                 var body = $('#chat-jid').val();
 
