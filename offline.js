@@ -26,16 +26,6 @@ var Gab = {
         $('#offline-chat-area').tabs('select', '#chat-' + jid_id);
         $('#chat-' + jid_id + ' input').focus();
 
-        var composing = $(message).find('composing');
-        if (composing.length > 0) {
-            $('#chat-' + jid_id + ' .chat-messages').append(
-                "<div class='chat-event'>" +
-                Strophe.getNodeFromJid(jid) +
-                " is typing...</div>");
-
-            Gab.scroll_chat(jid_id);
-        }
-
         var body = $(message).find("html > body");
 
         if (body.length === 0) {
@@ -62,9 +52,6 @@ var Gab = {
         }
 
         if (body) {
-            // remove notifications since user is now active
-            $('#chat-' + jid_id + ' .chat-event').remove();
-
             // add the new message
             $('#chat-' + jid_id + ' .chat-messages').append(
                 "<div class='chat-message'>" +
