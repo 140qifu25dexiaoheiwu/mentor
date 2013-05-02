@@ -14,6 +14,8 @@ var Groupie = {
     has_login : false,
     
     user_password: null,
+    color_online: "red",
+    color_offline: "blue",
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -208,8 +210,8 @@ var Groupie = {
                 name = jid.split('@')[0];
             } //if
 
-            var color = "blue";
-            if (Online.online_users[Strophe.getNodeFromJid(jid)]) { color = "red"};
+            var color = Groupie.color_offline;
+            if (Online.online_users[Strophe.getNodeFromJid(jid)]) color = Groupie.color_online;
             var element = $("<button id=" + jid + "><font color=" + color + ">" + Strophe.getNodeFromJid(jid) + "</font></button></br>");
             $("#room_panel").append(element);
         });
@@ -231,7 +233,6 @@ var Groupie = {
                             Groupie.teacher_nickname = name;
                             $(document).trigger('connected');
                             $("#rooms_dialog").dialog('close');
-                            $("#room_panel").empty(); 
                         } else{
                             document.getElementById('teacher_name').innerHTML = Groupie.teacher_nickname + ' ';
                             $('#chat_dialog').dialog('open');
@@ -403,82 +404,12 @@ $(document).ready(function () {
 
             var body = $(this).val();
 
-            var match = body.match(/^\/(.*?)(?: (.*))?$/);
-            var args = null;
-            if (match) {
-                if (match[1] === "msg") {
-                    args = match[2].match(/^(.*?) (.*)$/);
-                    if (Groupie.participants[args[1]]) {
-                        //todo
-                        Groupie.connection.send(
-                            $msg({
-                                to: Groupie.room + "/" + args[1],
-                                type: "chat"}).c('body').t(body));
-                        Groupie.add_message(
-                            "<div class='message private'>" +
-                                "@@ &lt;<span class='nick self'>" +
-                                Groupie.nickname + 
-                                "</span>&gt; <span class='body'>" +
-                                args[2] + "</span> @@</div>");
-                    } else {
-                        Groupie.add_message(
-                            "<div class='notice error'>" +
-                                "Error: User not in room." +
-                                "</div>");
-                    }
-                } else if (match[1] === "me" || match[1] === "action") {
-                    Groupie.connection.send(
-                        $msg({
-                            to: Groupie.room,
-                            type: "groupchat"}).c('body')
-                            .t('/me ' + match[2]));
-                } else if (match[1] === "topic") {
-                    Groupie.connection.send(
-                        $msg({to: Groupie.room,
-                              type: "groupchat"}).c('subject')
-                            .text(match[2]));
-                } else if (match[1] === "kick") {
-                    Groupie.connection.sendIQ(
-                        $iq({to: Groupie.room,
-                             type: "set"})
-                            .c('query', {xmlns: Groupie.NS_MUC + "#admin"})
-                            .c('item', {nick: match[2],
-                                        role: "none"}));
-                } else if (match[1] === "ban") {
-                    Groupie.connection.sendIQ(
-                        $iq({to: Groupie.room,
-                             type: "set"})
-                            .c('query', {xmlns: Groupie.NS_MUC + "#admin"})
-                            .c('item', {jid: Groupie.participants[match[2]],
-                                        affiliation: "outcast"}));
-                } else if (match[1] === "op") {
-                    Groupie.connection.sendIQ(
-                        $iq({to: Groupie.room,
-                             type: "set"})
-                            .c('query', {xmlns: Groupie.NS_MUC + "#admin"})
-                            .c('item', {jid: Groupie.participants[match[2]],
-                                        affiliation: "admin"}));
-                } else if (match[1] === "deop") {
-                    Groupie.connection.sendIQ(
-                        $iq({to: Groupie.room,
-                             type: "set"})
-                            .c('query', {xmlns: Groupie.NS_MUC + "#admin"})
-                            .c('item', {jid: Groupie.participants[match[2]],
-                                        affiliation: "none"}));
-                } else {
-                    Groupie.add_message(
-                        "<div class='notice error'>" +
-                            "Error: Command not recognized." +
-                            "</div>");
-                }
-            } else {
-                //如果是老师，则将消息发送给学生，否则发送消息给老师
-                var target = Groupie.teacher_nickname;
-                if (Groupie.nickname == Groupie.teacher_nickname) {
-                    target = Groupie.student_nickname;
-                };
-                Groupie.send_msg(target, body);
-            }
+            //如果是老师，则将消息发送给学生，否则发送消息给老师
+            var target = Groupie.teacher_nickname;
+            if (Groupie.nickname == Groupie.teacher_nickname) {
+                target = Groupie.student_nickname;
+            };
+            Groupie.send_msg(target, body);
 
             $(this).val('');
         }
