@@ -2,7 +2,6 @@ var Groupie = {
     connection: null,
     room: null,
     nickname: null,
-    register_password: null,
 
     NS_MUC: "http://jabber.org/protocol/muc",
 
@@ -278,7 +277,7 @@ var Groupie = {
         console.log(status);
         if (status === Strophe.Status.REGISTER) {
             Groupie.connection.register.fields.username = Groupie.nickname;
-            Groupie.connection.register.fields.password = Groupie.register_password;
+            Groupie.connection.register.fields.password = Groupie.user_password;
             Groupie.connection.register.submit();
         } else if (status === Strophe.Status.REGISTERED) {
             console.log("registered!");
@@ -338,7 +337,7 @@ $(document).ready(function () {
                 var username = $('#jid').val().toLowerCase();
                 if( username.length > 0 ){
                     Groupie.nickname = username;
-                    Groupie.register_password = $('#password').val();
+                    Groupie.user_password = $('#password').val();
                     Groupie.connection = new Strophe.Connection('http://localhost/http-bind');
                     Groupie.connection.register.connect("localhost", Groupie.on_register);
                     $(this).dialog('close');
