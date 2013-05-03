@@ -309,7 +309,7 @@ var Groupie = {
         window.close();
     },
 
-    init: function(type, username, password) {
+    init: function (type, username, password) {
 
         switch(parseInt(type)){
             case Constant.student_register:
@@ -335,9 +335,23 @@ var Groupie = {
         }
     },
 
+    popitup: function (url) {
+      newwindow=window.open(url,'name','height=650,width=950');
+      if (window.focus) {newwindow.focus()}
+      return false;
+    },
+
+    make_url: function () {
+      return "offline.html?"+ Constant.username + "=" + Groupie.nickname + "&" + Constant.password + "=" + Groupie.user_password;
+    },
+
 };
 
 $(document).ready(function () {
+    $('#input').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+    $('#participants').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+    $('#chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+
     var search = parseUri(window.location.search);
     Groupie.init(search.queryKey[Constant.login_type], search.queryKey[Constant.username], search.queryKey[Constant.password]);
 
@@ -378,10 +392,7 @@ $(document).ready(function () {
 
     $('#offline_msg').click(function () {
         $('#offline_msg').attr('disabled', 'disabled');
-        $(document).trigger('offline_connect', {
-                    jid: Groupie.nickname + "@localhost",
-                    password: Groupie.user_password
-        });     
+        Groupie.popitup(Groupie.make_url());
     });
 
     $('#input').keypress(function (ev) {

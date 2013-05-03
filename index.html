@@ -9,7 +9,6 @@
     <link rel='stylesheet' href='bootstrap/css/bootstrap-responsive.min.css'></link>
     <script type="text/javascript" src='popupWindow.js'></script>
     <script type="text/javascript" src='constants.js'></script>
-    <link rel='stylesheet' href='index.css'></link>
 
 
 
@@ -17,7 +16,7 @@
 
     <script type="text/javascript">
     function popitup(url) {
-      newwindow=window.open(url,'name','height=650,width=950');
+      newwindow=window.open(url,'name','height=650,width=950,location=no');
       if (window.focus) {newwindow.focus()}
       return false;
     }
@@ -43,33 +42,29 @@
 
   </head>
   <body>
-    <p class="text-center">教师答疑系统</p>
-    <div class="container">
-        <div class="row">
-            <div class="span5 center">
-              <form class="form-horizontal">
-                <div class="control-group">
-                  <label class="control-label" for="inputUsername">用户名</label>
-                  <div class="controls">
-                    <input type="text" id="inputUsername" placeholder="用户名">
-                  </div>
-                </div>
-                <div class="control-group">
-                  <label class="control-label" for="inputPassword">密码</label>
-                  <div class="controls">
-                    <input type="password" id="inputPassword" placeholder="密码">
-                  </div>
-                </div>
-                <div class="control-group">
-                  <div class="controls">
-                    <button type="submit" class="btn" id='student_register'>学生注册</button>
-                    <button type="submit" class="btn" id='student_login'>学生登陆</button>
-                    <button type="submit" class="btn" id='teacher_login'>教师登陆</button>
-                  </div>
-                </div>
-              </form>
+      <form class="form-inline">
+        <fieldset>
+          <legend>教师答疑系统</legend>
+          <div class="control-group">
+            <label class="control-label" for="inputUsername">用户名</label>
+            <div class="controls">
+              <input type="text" id="inputUsername" placeholder="用户名">
+            </div>
           </div>
-        </div>
-    </div>
+          <div class="control-group">
+            <label class="control-label" for="inputPassword">密码</label>
+            <div class="controls">
+              <input type="password" id="inputPassword" placeholder="密码">
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <button type="submit" class="btn" id='student_register'>学生注册</button>
+              <button type="submit" class="btn" id='student_login'>学生登陆</button>
+              <button type="submit" class="btn" id='teacher_login'>教师登陆</button>
+            </div>
+          </div>
+        </fieldset>
+      </form>
   </body>
 </html>

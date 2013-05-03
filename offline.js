@@ -76,11 +76,16 @@ var Gab = {
 };
 
 $(document).ready(function () {
-    $('#input').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
-    $('#participants').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
-    $('#chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+    
 
     $('#offline-chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+
+    var search = parseUri(window.location.search);
+    
+    $(document).trigger('offline_connect', {
+                    jid: search.queryKey[Constant.username] + "@localhost",
+                    password: search.queryKey[Constant.password]
+    });  
 
     $('.chat-input').live('keypress', function (ev) {
         var jid = $(this).parent().data('jid');
