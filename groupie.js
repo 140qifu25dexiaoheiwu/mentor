@@ -310,8 +310,6 @@ var Groupie = {
     },
 
     init: function(type, username, password) {
-        alert(username);
-        alert(password);
 
         switch(parseInt(type)){
             case Constant.student_register:

@@ -1,0 +1,8 @@
+.center {
+    float: none;
+    margin: 0 auto;
+    text-align: center;
+}
+.control-label {
+    padding-left: 20px;
+}
