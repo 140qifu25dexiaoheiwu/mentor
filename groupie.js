@@ -14,8 +14,6 @@ var Groupie = {
     has_login : false,
     
     user_password: null,
-    color_online: "red",
-    color_offline: "blue",
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -210,8 +208,8 @@ var Groupie = {
                 name = jid.split('@')[0];
             } //if
 
-            var color = Groupie.color_offline;
-            if (Online.online_users[Strophe.getNodeFromJid(jid)]) color = Groupie.color_online;
+            var color = Constant.color_offline;
+            if (Online.online_users[Strophe.getNodeFromJid(jid)]) color = Constant.color_online;
             var element = $("<button id=" + jid + "><font color=" + color + ">" + Strophe.getNodeFromJid(jid) + "</font></button></br>");
             $("#room_panel").append(element);
         });
@@ -260,18 +258,18 @@ var Groupie = {
                                 body + "</span> </div>");
     },
     
-    login: function () {
+    login: function (username, password) {
         Groupie.has_login = false;
-        Groupie.nickname = $('#jid').val().toLowerCase();
-        Groupie.user_password = $('#password').val();
+        Groupie.nickname = username;
+        Groupie.user_password = password;
         
         $(document).trigger('connect', {
                     jid: Groupie.nickname + "@localhost",
                     password: Groupie.user_password
         });
 
-        $('#password').val('');
-        $('#login_dialog').dialog('close');
+        //$('#password').val('');
+        //$('#login_dialog').dialog('close');
     },
 
     on_register: function (status) {
@@ -282,7 +280,7 @@ var Groupie = {
             Groupie.connection.register.submit();
         } else if (status === Strophe.Status.REGISTERED) {
             console.log("registered!");
-            Groupie.login();
+            Groupie.login(Groupie.nickname,Groupie.user_password);
             //Groupie.connection.authenticate();
             //$('#login_dialog').dialog('open');
         } else if (status === Strophe.Status.SBMTFAIL) {
@@ -308,46 +306,42 @@ var Groupie = {
         if (Online.connection != null) {
             Online.connection.disconnect();            
         };
-    }
+        window.close();
+    },
+
+    init: function(type, username, password) {
+        alert(username);
+        alert(password);
+
+        switch(parseInt(type)){
+            case Constant.student_register:
+                Groupie.room = null;
+                Groupie.teacher_nickname = null;
+                Groupie.nickname = username;
+                Groupie.user_password = password;
+                Groupie.connection = new Strophe.Connection('http://localhost/http-bind');
+                Groupie.connection.register.connect("localhost", Groupie.on_register);
+                break;
+            
+            case Constant.student_login:
+                Groupie.room = null;
+                Groupie.teacher_nickname = null;
+                Groupie.login(username, password);
+                break;
+
+            case Constant.teacher_login:
+                Groupie.room = username + "@conference.localhost";
+                Groupie.teacher_nickname = username;
+                Groupie.login(username, password);
+                break;
+        }
+    },
 
 };
 
 $(document).ready(function () {
-    $('#login_dialog').dialog({
-        autoOpen: true,
-        draggable: false,
-        modal: true,
-        title: '登陆',
-        width: 350,
-        buttons: {
-            "教师登陆": function () {
-                Groupie.room = $('#jid').val().toLowerCase() + "@conference.localhost";
-                Groupie.teacher_nickname = $('#jid').val().toLowerCase();
-                Groupie.login();
-            },
-
-            "学生登陆": function () {
-                Groupie.room = null;
-                Groupie.teacher_nickname = null;
-                Groupie.login();
-            },
-
-            "学生注册": function () {
-                Groupie.room = null;
-                Groupie.teacher_nickname = null;
-                var username = $('#jid').val().toLowerCase();
-                if( username.length > 0 ){
-                    Groupie.nickname = username;
-                    Groupie.user_password = $('#password').val();
-                    Groupie.connection = new Strophe.Connection('http://localhost/http-bind');
-                    Groupie.connection.register.connect("localhost", Groupie.on_register);
-                    $(this).dialog('close');
-                }else {
-                    alert('请输入用户名和密码');
-                }
-            }
-        }
-    });
+    var search = parseUri(window.location.search);
+    Groupie.init(search.queryKey[Constant.login_type], search.queryKey[Constant.username], search.queryKey[Constant.password]);
 
     $('#rooms_dialog').dialog({
         autoOpen: false,
@@ -471,7 +465,7 @@ $(document).bind('disconnected', function () {
     $('#room-topic').empty();
     $('#participant-list').empty();
     $('#chat').empty();
-    $('#login_dialog').dialog('open');
+    //$('#login_dialog').dialog('open');
 });
 
 $(document).bind('room_joined', function () {
