@@ -15,7 +15,7 @@ var Gab = {
         var jid_id = Gab.jid_to_id(jid);
 
         if ($('#chat-' + jid_id).length === 0) {
-            $('#offline-chat-area').tabs('add', '#chat-' + jid_id, jid);
+            $('#offline-chat-area').tabs('add', '#chat-' + jid_id, Strophe.getNodeFromJid(jid));
             $('#chat-' + jid_id).append(
                 "<div class='chat-messages'></div>" +
                 "<input type='text' class='chat-input'>");
@@ -76,11 +76,11 @@ var Gab = {
 };
 
 $(document).ready(function () {
-    
 
     $('#offline-chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
 
     var search = parseUri(window.location.search);
+    $('#room-name').text('教师' + search.queryKey[Constant.username] + '离线信息');
     
     $(document).trigger('offline_connect', {
                     jid: search.queryKey[Constant.username] + "@localhost",
@@ -99,7 +99,7 @@ $(document).ready(function () {
                                 "type": "chat"})
                 .c('body').t(body).up()
                 .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
-            Groupie.connection.send(message);
+            Gab.connection.send(message);
 
             $(this).parent().find('.chat-messages').append(
                 "<div class='chat-message'>&lt;" +
@@ -112,28 +112,6 @@ $(document).ready(function () {
 
             $(this).val('');
             $(this).parent().data('composing', false);
-        }
-    });
-
-    $('#chat_dialog').dialog({
-        autoOpen: false,
-        draggable: false,
-        modal: true,
-        title: '向老师发送离线留言',
-        buttons: {
-            "发送": function () {
-
-                var body = $('#chat-jid').val();
-
-                var message = $msg({to: Groupie.teacher_nickname + "@localhost" ,
-                                    "type": "chat"})
-                    .c('body').t(body).up()
-                    .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
-                Groupie.connection.send(message);            
-            
-                $('#chat-jid').val('');
-                $(this).dialog('close');
-            }
         }
     });
 });

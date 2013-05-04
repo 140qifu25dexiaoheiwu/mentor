@@ -1,0 +1,42 @@
+body {
+    font-family: Helvetica;
+}
+
+h1 {
+    text-align: center;
+}
+
+.hidden {
+    display: none
+}
+
+.clear {
+    clear: both;
+}
+
+#div-name {
+    font-size: 150%;
+    font-weight: bold;
+}
+
+#offline-chat-area {
+    float: left;
+    width: 350px;
+    height: 500px;
+}
+
+.chat-messages {
+    height: 280px;
+    border-bottom: solid 2px #ddd;
+    overflow: auto;
+-}
+
+#chat-area input {
+    margin-top: 10px;
+    width: 95%;
+}
+
+#input {
+    width: 95%;
+    font-size: 120%;
+}

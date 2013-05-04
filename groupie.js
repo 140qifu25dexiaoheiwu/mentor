@@ -14,6 +14,7 @@ var Groupie = {
     has_login : false,
     
     user_password: null,
+    offline_window: null,
 
     on_presence: function (presence) {
         var from = $(presence).attr('from');
@@ -300,13 +301,14 @@ var Groupie = {
                    type: "unavailable"}));
         Groupie.has_login = true;
         Groupie.connection.disconnect();
-        if (Gab.connection != null) {
-            Gab.connection.disconnect();
-        };
         if (Online.connection != null) {
             Online.connection.disconnect();            
         };
+        if (Groupie.offline_window != null) {
+            Groupie.offline_window.close();
+        };
         window.close();
+
     },
 
     init: function (type, username, password) {
@@ -336,8 +338,8 @@ var Groupie = {
     },
 
     popitup: function (url) {
-      newwindow=window.open(url,'name','height=650,width=950');
-      if (window.focus) {newwindow.focus()}
+      Groupie.offline_window=window.open(url,Groupie.nickname +'-offline','height=520,width=380,location=no');
+      if (window.focus) {Groupie.offline_window.focus()}
       return false;
     },
 
@@ -360,6 +362,28 @@ $(document).ready(function () {
         draggable: false,
         modal: true,
         title: '在线教师列表',
+    });
+
+    $('#chat_dialog').dialog({
+        autoOpen: false,
+        draggable: false,
+        modal: true,
+        title: '向老师发送离线留言',
+        buttons: {
+            "发送": function () {
+
+                var body = $('#chat-jid').val();
+
+                var message = $msg({to: Groupie.teacher_nickname + "@localhost" ,
+                                    "type": "chat"})
+                    .c('body').t(body).up()
+                    .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
+                Groupie.connection.send(message);            
+            
+                $('#chat-jid').val('');
+                $(this).dialog('close');
+            }
+        }
     });
 
     $('#save_dialog').dialog({

@@ -40,6 +40,11 @@ h1 {
     border: solid 1px #ccc;
 }
 
+#div-name {
+    font-size: 150%;
+    font-weight: bold;
+}
+
 #participants {
     float: left;
     width: 150px;
