@@ -7,6 +7,33 @@ var Gab = {
             .replace(/\./g, "-");
     },
 
+    pending_subscriber: null,
+
+    on_presence: function (presence) {
+        //alert("on_presence");
+        var ptype = $(presence).attr('type');
+        var from = $(presence).attr('from');
+        var jid_id = Gab.jid_to_id(from);
+
+        if (ptype === 'subscribe') {
+            // populate pending_subscriber, the approve-jid span, and
+            // open the dialog
+            Gab.pending_subscriber = from;
+            $('#approve-jid').text(Strophe.getBareJidFromJid(from));
+            Gab.connection.send($pres({
+                    to: Gab.pending_subscriber,
+                    "type": "subscribed"}));
+
+                Gab.connection.send($pres({
+                    to: Gab.pending_subscriber,
+                    "type": "subscribe"}));
+                
+                Gab.pending_subscriber = null;
+        }
+
+        return true;
+    },
+
     on_message: function (message) {
         console.log('offline message ' + message);
 
@@ -80,7 +107,7 @@ $(document).ready(function () {
     $('#offline-chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
 
     var search = parseUri(window.location.search);
-    $('#room-name').text('教师' + search.queryKey[Constant.username] + '离线信息');
+    $('#div-name').text('教师' + search.queryKey[Constant.username] + '离线信息');
     
     $(document).trigger('offline_connect', {
                     jid: search.queryKey[Constant.username] + "@localhost",
@@ -135,6 +162,8 @@ $(document).bind('offline_connected', function () {
     console.log('offline_connected');
     Gab.connection.addHandler(Gab.on_message,
                               null, "message", "chat");
+    Gab.connection.addHandler(Gab.on_presence, null, "presence");
+
     Gab.connection.send($pres());
     
 });

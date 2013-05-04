@@ -371,6 +371,10 @@ $(document).ready(function () {
         title: '向老师发送离线留言',
         buttons: {
             "发送": function () {
+                $(document).trigger('contact_added', {
+                    jid: Groupie.teacher_nickname + "@localhost",
+                    name: Groupie.teacher_nickname
+                });
 
                 var body = $('#chat-jid').val();
 
@@ -557,4 +561,13 @@ $(document).bind('user_left', function (ev, nick) {
     //总人数减1
     total--;
 
+});
+
+$(document).bind('contact_added', function (ev, data) {
+    var iq = $iq({type: "set"}).c("query", {xmlns: "jabber:iq:roster"})
+        .c("item", data);
+    Groupie.connection.sendIQ(iq);
+    
+    var subscribe = $pres({to: data.jid, "type": "subscribe"});
+    Groupie.connection.send(subscribe);
 });
