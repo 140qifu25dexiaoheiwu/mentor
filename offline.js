@@ -1,7 +1,7 @@
 var Gab = {
     connection: null,
 
-    jid_to_id: function (jid) {
+    jid_to_id: function(jid) {
         return Strophe.getBareJidFromJid(jid)
             .replace(/@/g, "-")
             .replace(/\./g, "-");
@@ -9,7 +9,7 @@ var Gab = {
 
     pending_subscriber: null,
 
-    on_presence: function (presence) {
+    on_presence: function(presence) {
         //alert("on_presence");
         var ptype = $(presence).attr('type');
         var from = $(presence).attr('from');
@@ -21,20 +21,22 @@ var Gab = {
             Gab.pending_subscriber = from;
             $('#approve-jid').text(Strophe.getBareJidFromJid(from));
             Gab.connection.send($pres({
-                    to: Gab.pending_subscriber,
-                    "type": "subscribed"}));
+                to: Gab.pending_subscriber,
+                "type": "subscribed"
+            }));
 
-                Gab.connection.send($pres({
-                    to: Gab.pending_subscriber,
-                    "type": "subscribe"}));
-                
-                Gab.pending_subscriber = null;
+            Gab.connection.send($pres({
+                to: Gab.pending_subscriber,
+                "type": "subscribe"
+            }));
+
+            Gab.pending_subscriber = null;
         }
 
         return true;
     },
 
-    on_message: function (message) {
+    on_message: function(message) {
         console.log('offline message ' + message);
 
         var full_jid = $(message).attr('from');
@@ -47,7 +49,7 @@ var Gab = {
                 "<div class='chat-messages'></div>" +
                 "<input type='text' class='chat-input'>");
         }
-        
+
         $('#chat-' + jid_id).data('jid', full_jid);
 
         $('#offline-chat-area').tabs('select', '#chat-' + jid_id);
@@ -66,7 +68,7 @@ var Gab = {
             body = body.contents();
 
             var span = $("<span></span>");
-            body.each(function () {
+            body.each(function() {
                 if (document.importNode) {
                     $(document.importNode(this, true)).appendTo(span);
                 } else {
@@ -82,8 +84,7 @@ var Gab = {
             // add the new message
             $('#chat-' + jid_id + ' .chat-messages').append(
                 "<div class='chat-message'>" +
-                "&lt;<span class='chat-name'>" +
-                Strophe.getNodeFromJid(jid) +
+                "&lt;<span class='chat-name'>" + Strophe.getNodeFromJid(jid) +
                 "</span>&gt;<span class='chat-text'>" +
                 "</span></div>");
 
@@ -96,25 +97,27 @@ var Gab = {
         return true;
     },
 
-    scroll_chat: function (jid_id) {
+    scroll_chat: function(jid_id) {
         var div = $('#chat-' + jid_id + ' .chat-messages').get(0);
         div.scrollTop = div.scrollHeight;
     }
 };
 
-$(document).ready(function () {
+$(document).ready(function() {
 
-    $('#offline-chat-area').tabs().find('.ui-tabs-nav').sortable({axis: 'x'});
+    $('#offline-chat-area').tabs().find('.ui-tabs-nav').sortable({
+        axis: 'x'
+    });
 
     var search = parseUri(window.location.search);
     $('#div-name').text('教师' + search.queryKey[Constant.username] + '离线信息');
-    
-    $(document).trigger('offline_connect', {
-                    jid: search.queryKey[Constant.username] + "@localhost",
-                    password: search.queryKey[Constant.password]
-    });  
 
-    $('.chat-input').live('keypress', function (ev) {
+    $(document).trigger('offline_connect', {
+        jid: search.queryKey[Constant.username] + "@localhost",
+        password: search.queryKey[Constant.password]
+    });
+
+    $('.chat-input').live('keypress', function(ev) {
         var jid = $(this).parent().data('jid');
 
         if (ev.which === 13) {
@@ -122,18 +125,20 @@ $(document).ready(function () {
 
             var body = $(this).val();
 
-            var message = $msg({to: jid,
-                                "type": "chat"})
+            var message = $msg({
+                to: jid,
+                "type": "chat"
+            })
                 .c('body').t(body).up()
-                .c('active', {xmlns: "http://jabber.org/protocol/chatstates"});
+                .c('active', {
+                xmlns: "http://jabber.org/protocol/chatstates"
+            });
             Gab.connection.send(message);
 
             $(this).parent().find('.chat-messages').append(
                 "<div class='chat-message'>&lt;" +
-                "<span class='chat-name me'>" + 
-                Strophe.getNodeFromJid(Gab.connection.jid) +
-                "</span>&gt;<span class='chat-text'>" +
-                body +
+                "<span class='chat-name me'>" + Strophe.getNodeFromJid(Gab.connection.jid) +
+                "</span>&gt;<span class='chat-text'>" + body +
                 "</span></div>");
             Gab.scroll_chat(Gab.jid_to_id(jid));
 
@@ -143,11 +148,11 @@ $(document).ready(function () {
     });
 });
 
-$(document).bind('offline_connect', function (ev, data) {
+$(document).bind('offline_connect', function(ev, data) {
     var conn = new Strophe.Connection(
         'http://localhost/http-bind');
 
-    conn.connect(data.jid, data.password, function (status) {
+    conn.connect(data.jid, data.password, function(status) {
         if (status === Strophe.Status.CONNECTED) {
             $(document).trigger('offline_connected');
         } else if (status === Strophe.Status.DISCONNECTED) {
@@ -158,17 +163,17 @@ $(document).bind('offline_connect', function (ev, data) {
     Gab.connection = conn;
 });
 
-$(document).bind('offline_connected', function () {
+$(document).bind('offline_connected', function() {
     console.log('offline_connected');
     Gab.connection.addHandler(Gab.on_message,
-                              null, "message", "chat");
+    null, "message", "chat");
     Gab.connection.addHandler(Gab.on_presence, null, "presence");
 
     Gab.connection.send($pres());
-    
+
 });
 
-$(document).bind('offline_disconnected', function () {
+$(document).bind('offline_disconnected', function() {
     Gab.connection = null;
 
     $('#offline-chat-area ul').empty();

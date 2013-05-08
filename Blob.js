@@ -1,7 +1,7 @@
 /* Blob.js
  * A Blob implementation.
  * 2013-01-23
- * 
+ *
  * By Eli Grey, http://eligrey.com
  * By Devin Samarin, https://github.com/eboyjr
  * License: X11/MIT
@@ -14,49 +14,41 @@
 
 /*! @source http://purl.eligrey.com/github/Blob.js/blob/master/Blob.js */
 
-if (typeof Blob !== "function" || typeof URL === "undefined")
-var Blob = (function (view) {
+if (typeof Blob !== "function" || typeof URL === "undefined") var Blob = (function(view) {
 	"use strict";
 
 	var BlobBuilder = view.BlobBuilder || view.WebKitBlobBuilder || view.MozBlobBuilder || view.MSBlobBuilder || (function(view) {
 		var
-			  get_class = function(object) {
-				return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
-			}
-			, FakeBlobBuilder = function BlobBuilder() {
-				this.data = [];
-			}
-			, FakeBlob = function Blob(data, type, encoding) {
-				this.data = data;
-				this.size = data.length;
-				this.type = type;
-				this.encoding = encoding;
-			}
-			, FBB_proto = FakeBlobBuilder.prototype
-			, FB_proto = FakeBlob.prototype
-			, FileReaderSync = view.FileReaderSync
-			, FileException = function(type) {
+		get_class = function(object) {
+			return Object.prototype.toString.call(object).match(/^\[object\s(.*)\]$/)[1];
+		}, FakeBlobBuilder = function BlobBuilder() {
+			this.data = [];
+		}, FakeBlob = function Blob(data, type, encoding) {
+			this.data = data;
+			this.size = data.length;
+			this.type = type;
+			this.encoding = encoding;
+		}, FBB_proto = FakeBlobBuilder.prototype,
+			FB_proto = FakeBlob.prototype,
+			FileReaderSync = view.FileReaderSync,
+			FileException = function(type) {
 				this.code = this[this.name = type];
-			}
-			, file_ex_codes = (
-				  "NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR "
-				+ "NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR"
-			).split(" ")
-			, file_ex_code = file_ex_codes.length
-			, real_URL = view.URL || view.webkitURL || view
-			, real_create_object_URL = real_URL.createObjectURL
-			, real_revoke_object_URL = real_URL.revokeObjectURL
-			, URL = real_URL
-			, btoa = view.btoa
-			, atob = view.atob
-			, can_apply_typed_arrays = false
-			, can_apply_typed_arrays_test = function(pass) {
+			}, file_ex_codes = (
+				"NOT_FOUND_ERR SECURITY_ERR ABORT_ERR NOT_READABLE_ERR ENCODING_ERR " + "NO_MODIFICATION_ALLOWED_ERR INVALID_STATE_ERR SYNTAX_ERR").split(" "),
+			file_ex_code = file_ex_codes.length,
+			real_URL = view.URL || view.webkitURL || view,
+			real_create_object_URL = real_URL.createObjectURL,
+			real_revoke_object_URL = real_URL.revokeObjectURL,
+			URL = real_URL,
+			btoa = view.btoa,
+			atob = view.atob,
+			can_apply_typed_arrays = false,
+			can_apply_typed_arrays_test = function(pass) {
 				can_apply_typed_arrays = !pass;
 			}
-			
-			, ArrayBuffer = view.ArrayBuffer
-			, Uint8Array = view.Uint8Array
-		;
+
+			, ArrayBuffer = view.ArrayBuffer,
+			Uint8Array = view.Uint8Array;
 		FakeBlob.fake = FB_proto.fake = true;
 		while (file_ex_code--) {
 			FileException.prototype[file_ex_codes[file_ex_code]] = file_ex_code + 1;
@@ -71,9 +63,8 @@ var Blob = (function (view) {
 		}
 		URL.createObjectURL = function(blob) {
 			var
-				  type = blob.type
-				, data_URI_header
-			;
+			type = blob.type,
+				data_URI_header;
 			if (type === null) {
 				type = "application/octet-stream";
 			}
@@ -83,7 +74,8 @@ var Blob = (function (view) {
 					return data_URI_header + ";base64," + blob.data;
 				} else if (blob.encoding === "URI") {
 					return data_URI_header + "," + decodeURIComponent(blob.data);
-				} if (btoa) {
+				}
+				if (btoa) {
 					return data_URI_header + ";base64," + btoa(blob.data);
 				} else {
 					return data_URI_header + "," + encodeURIComponent(blob.data);
@@ -97,7 +89,7 @@ var Blob = (function (view) {
 				real_revoke_object_URL.call(real_URL, object_URL);
 			}
 		};
-		FBB_proto.append = function(data/*, endings*/) {
+		FBB_proto.append = function(data /*, endings*/ ) {
 			var bb = this.data;
 			// decode data to a binary string
 			if (Uint8Array && (data instanceof ArrayBuffer || data instanceof Uint8Array)) {
@@ -105,11 +97,10 @@ var Blob = (function (view) {
 					bb.push(String.fromCharCode.apply(String, new Uint8Array(data)));
 				} else {
 					var
-						  str = ""
-						, buf = new Uint8Array(data)
-						, i = 0
-						, buf_len = buf.length
-					;
+					str = "",
+						buf = new Uint8Array(data),
+						i = 0,
+						buf_len = buf.length;
 					for (; i < buf_len; i++) {
 						str += String.fromCharCode(buf[i]);
 					}
@@ -153,10 +144,7 @@ var Blob = (function (view) {
 				type = null;
 			}
 			return new FakeBlob(
-				  this.data.slice(start, args > 1 ? end : this.data.length)
-				, type
-				, this.encoding
-			);
+			this.data.slice(start, args > 1 ? end : this.data.length), type, this.encoding);
 		};
 		FB_proto.toString = function() {
 			return "[object Blob]";

@@ -2,10 +2,10 @@ var Online = {
     connection: null,
     online_users: null,
 
-    on_online_users: function (iq) {
+    on_online_users: function(iq) {
         console.log(iq);
         var online_users = {};
-        $(iq).find('item').each(function () {
+        $(iq).find('item').each(function() {
             var name = Strophe.getNodeFromJid($(this).attr('name'));
             online_users[name] = true;
         });
@@ -17,7 +17,7 @@ var Online = {
 
 };
 
-$(document).bind('student_connect', function (ev, data) {
+$(document).bind('student_connect', function(ev, data) {
     console.log("Groupie room : " + Groupie.room);
     if (Groupie.room != null) {
         return;
@@ -25,9 +25,9 @@ $(document).bind('student_connect', function (ev, data) {
     var conn = new Strophe.Connection(
         'http://localhost/http-bind');
 
-    conn.connect("admin@localhost", "admin", function (status) {
+    conn.connect("admin@localhost", "admin", function(status) {
         if (status === Strophe.Status.CONNECTED) {
-                $(document).trigger('student_connected');            
+            $(document).trigger('student_connected');
         } else if (status === Strophe.Status.DISCONNECTED) {
             $(document).trigger('disconnected');
         }
@@ -36,17 +36,22 @@ $(document).bind('student_connect', function (ev, data) {
     Online.connection = conn;
 });
 
-$(document).bind('student_connected', function () {
+$(document).bind('student_connected', function() {
     //get onine users
 
     Online.connection.addHandler(Online.on_online_users,
-                                  null, "iq");
-    var iq = $iq({to: "localhost",
-                             type: "get"})
-                            .c('query', {xmlns: "http://jabber.org/protocol/disco#items", node: "online users"});
+    null, "iq");
+    var iq = $iq({
+        to: "localhost",
+        type: "get"
+    })
+        .c('query', {
+        xmlns: "http://jabber.org/protocol/disco#items",
+        node: "online users"
+    });
     Online.connection.sendIQ(iq);
 });
 
-$(document).bind('student_disconnected', function () {
+$(document).bind('student_disconnected', function() {
     Online.connection = null;
 });

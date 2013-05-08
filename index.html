@@ -16,27 +16,29 @@
 
     <script type="text/javascript">
     function popitup(url) {
-      newwindow=window.open(url,$('#inputUsername').val(),'height=650,width=615,location=no');
-      if (window.focus) {newwindow.focus()}
+      newwindow = window.open(url, $('#inputUsername').val(), 'height=650,width=615,location=no');
+      if (window.focus) {
+        newwindow.focus()
+      }
       return false;
     }
 
     function make_url(type) {
-      return "groupie.html?"+ Constant.login_type + "=" + type + "&" + Constant.username + "=" + $('#inputUsername').val() + "&" + Constant.password + "=" + $('#inputPassword').val();
+      return "groupie.html?" + Constant.login_type + "=" + type + "&" + Constant.username + "=" + $('#inputUsername').val() + "&" + Constant.password + "=" + $('#inputPassword').val();
     }
 
     $(document).ready(function() {
       $('.carousel').carousel();
 
-      $('#student_register').click(function () {
+      $('#student_register').click(function() {
         popitup(make_url(Constant.student_register));
       });
 
-      $('#student_login').click(function () {
+      $('#student_login').click(function() {
         popitup(make_url(Constant.student_login));
       });
 
-      $('#teacher_login').click(function () {
+      $('#teacher_login').click(function() {
         popitup(make_url(Constant.teacher_login));
       });
     });
