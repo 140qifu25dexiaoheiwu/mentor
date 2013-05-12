@@ -15,6 +15,8 @@ var Groupie = {
 
     user_password: null,
     offline_window: null,
+    featured_window: null,
+
 
     on_presence: function(presence) {
         var from = $(presence).attr('from');
@@ -196,18 +198,15 @@ var Groupie = {
         var count = 0;
         $("#room_panel").empty();
         $('item', iq).each(function(index, value) {
-            count++;
-            var name = $(value).attr('name');
             var jid = $(value).attr('jid');
-
-            if (typeof name == 'undefined') {
-                name = jid.split('@')[0];
-            } //if
-
-            var color = Constant.color_offline;
-            if (Online.online_users[Strophe.getNodeFromJid(jid)]) color = Constant.color_online;
-            var element = $("<button id=" + jid + "><font color=" + color + ">" + Strophe.getNodeFromJid(jid) + "</font></button></br>");
-            $("#room_panel").append(element);
+            var name = Strophe.getNodeFromJid(jid);
+            if (name != Constant.featured) {
+                count++;
+                var color = Constant.color_offline;
+                if (Online.online_users[name]) color = Constant.color_online;
+                var element = $("<button id=" + jid + "><font color=" + color + ">" + name + "</font></button></br>");
+                $("#room_panel").append(element);
+            }
         });
 
         //初始化房间列表对话框
@@ -303,6 +302,9 @@ var Groupie = {
         if (Groupie.offline_window != null) {
             Groupie.offline_window.close();
         };
+        if (Groupie.featured_window != null) {
+            Groupie.featured_window.close();
+        };
         window.close();
 
     },
@@ -333,7 +335,7 @@ var Groupie = {
         }
     },
 
-    popitup: function(url) {
+    pop_offline: function(url) {
         Groupie.offline_window = window.open(url, Groupie.nickname + '-offline', 'height=520,width=380,location=no');
         if (window.focus) {
             Groupie.offline_window.focus()
@@ -341,8 +343,17 @@ var Groupie = {
         return false;
     },
 
-    make_url: function() {
-        return "offline.html?" + Constant.username + "=" + Groupie.nickname + "&" + Constant.password + "=" + Groupie.user_password;
+    pop_featured: function(url) {
+        Groupie.featured_window = window.open(url, Groupie.nickname + '-featured', 'height=520,width=380,location=no');
+        if (window.focus) {
+            Groupie.featured_window.focus()
+        }
+        return false;
+    },
+
+    make_url: function(html) {
+        var login_type = Groupie.nickname == Groupie.teacher_nickname ? Constant.teacher_login : Constant.student_login;
+        return html + Constant.username + "=" + Groupie.nickname + "&" + Constant.password + "=" + Groupie.user_password + "&" + Constant.login_type + "=" + login_type;
     },
 
 };
@@ -430,7 +441,12 @@ $(document).ready(function() {
 
     $('#offline_msg').click(function() {
         $('#offline_msg').attr('disabled', 'disabled');
-        Groupie.popitup(Groupie.make_url());
+        Groupie.pop_offline(Groupie.make_url("offline.html?"));
+    });
+
+    $('#featured').click(function() {
+        $('#featured').attr('disabled', 'disabled');
+        Groupie.pop_featured(Groupie.make_url("featured.html?"));
     });
 
     $('#input').keypress(function(ev) {
@@ -531,6 +547,7 @@ $(document).bind('room_joined', function() {
 
     $('#leave').removeAttr('disabled');
     $('#offline_msg').removeAttr('disabled');
+    $('#featured').removeAttr('disabled');
     $('#room-name').text('教师' + Groupie.teacher_nickname + '答疑');
 
     Groupie.add_message("<div class='notice'>你好，欢迎来到教师答疑系统.</div>");

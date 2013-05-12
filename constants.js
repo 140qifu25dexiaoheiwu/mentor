@@ -7,4 +7,5 @@ var Constant = {
 	student_register: 0,
 	student_login: 1,
 	teacher_login: 2,
+	featured: "featured",
 }
