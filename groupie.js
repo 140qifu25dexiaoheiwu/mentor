@@ -344,7 +344,7 @@ var Groupie = {
     },
 
     pop_featured: function(url) {
-        Groupie.featured_window = window.open(url, Groupie.nickname + '-featured', 'height=520,width=380,location=no');
+        Groupie.featured_window = window.open(url, Groupie.nickname + '-featured', 'height=590,width=425,location=no');
         if (window.focus) {
             Groupie.featured_window.focus()
         }
@@ -440,12 +440,12 @@ $(document).ready(function() {
     });
 
     $('#offline_msg').click(function() {
-        $('#offline_msg').attr('disabled', 'disabled');
+        //$('#offline_msg').attr('disabled', 'disabled');
         Groupie.pop_offline(Groupie.make_url("offline.html?"));
     });
 
     $('#featured').click(function() {
-        $('#featured').attr('disabled', 'disabled');
+        //$('#featured').attr('disabled', 'disabled');
         Groupie.pop_featured(Groupie.make_url("featured.html?"));
     });
 

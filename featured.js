@@ -8,7 +8,7 @@ var Featured = {
     joined: null,
     participants: null,
 
-    on_presence: function (presence) {
+    on_presence: function(presence) {
         console.log(presence);
 
         var from = $(presence).attr('from');
@@ -17,13 +17,11 @@ var Featured = {
         // make sure this presence is for the right room
         if (room === Featured.room) {
             var nick = Strophe.getResourceFromJid(from);
-          
-            if ($(presence).attr('type') === 'error' &&
-                !Featured.joined) {
+
+            if ($(presence).attr('type') === 'error' && !Featured.joined) {
                 // error joining room; reset app
                 Featured.connection.disconnect();
-            } else if (!Featured.participants[nick] &&
-                $(presence).attr('type') !== 'unavailable') {
+            } else if (!Featured.participants[nick] && $(presence).attr('type') !== 'unavailable') {
                 // add to participant list
                 // var user_jid = $(presence).find('item').attr('jid');
                 // Featured.participants[nick] = user_jid || true;
@@ -32,8 +30,7 @@ var Featured = {
                 if (Featured.joined) {
                     $(document).trigger('user_joined', nick);
                 }
-            } else if (Featured.participants[nick] &&
-                       $(presence).attr('type') === 'unavailable') {
+            } else if (Featured.participants[nick] && $(presence).attr('type') === 'unavailable') {
                 // remove from participants list
                 // $('#participant-list li').each(function () {
                 //     if (nick === $(this).text()) {
@@ -45,8 +42,7 @@ var Featured = {
                 $(document).trigger('user_left', nick);
             }
 
-            if ($(presence).attr('type') !== 'error' && 
-                !Featured.joined) {
+            if ($(presence).attr('type') !== 'error' && !Featured.joined) {
                 // check for status 110 to see if it's our own presence
                 if ($(presence).find("status[code='110']").length > 0) {
                     // check if server changed our nick
@@ -83,6 +79,11 @@ var Featured = {
 
             var body = $(message).children('body').text();
 
+            console.log('body ' + body);
+            if (body == Constant.cleaner_message) {
+                return true;
+            }
+
             var delayed = $(message).children("delay").length > 0 || $(message).children("x[xmlns='jabber:x:delay']").length > 0;
 
             // look for room topic change
@@ -99,6 +100,7 @@ var Featured = {
                     Featured.add_message(
                         "<div class='message" + delay_css + "'>" +
                         "&lt;<span class='" + nick_class + "'>" + nick + "</span>&gt; <span class='body'>" + body + "</span></div>");
+
                 } else {
                     Featured.add_message(
                         "<div class='message action " + delay_css + "'>" +
@@ -130,7 +132,7 @@ var Featured = {
 
         Featured.room = Constant.featured + "@conference.localhost";
         Featured.nickname = username;
-                
+
         $(document).trigger('connect', {
             jid: Featured.nickname + "@localhost",
             password: password
@@ -140,13 +142,24 @@ var Featured = {
 
 $(document).ready(function() {
 
+    $('#input').tabs().find('.ui-tabs-nav').sortable({
+        axis: 'x'
+    });
+
+    $('#chat-area').tabs().find('.ui-tabs-nav').sortable({
+        axis: 'x'
+    });
+
     var search = parseUri(window.location.search);
     Featured.init(search.queryKey[Constant.username], search.queryKey[Constant.password]);
 
-    if(search.queryKey[Constant.login_type] == Constant.student_login){
+    if (search.queryKey[Constant.login_type] == Constant.student_login) {
         $('#input').hide();
-    }else{
+        $('#delete').hide();
+    } else {
         $('#input').show();
+        $('#delete').show();
+
     };
 
     $('#leave').click(function() {
@@ -157,6 +170,18 @@ $(document).ready(function() {
             type: "unavailable"
         }));
         Featured.connection.disconnect();
+    });
+
+    $('#delete').click(function() {
+        $('#chat').empty();
+        var num = parseInt(Constant.featured_message_num);
+        for (var i = 0; i < num; i++) {
+            Featured.connection.send(
+            $msg({
+                to: Featured.room,
+                type: "groupchat"
+            }).c('body').t(Constant.cleaner_message));
+        }
     });
 
     $('#input').keypress(function(ev) {
@@ -208,7 +233,8 @@ $(document).bind('connected', function() {
     }).c('x', {
         xmlns: Featured.NS_MUC
     }).c('history', {
-        since: "2013-05-12T05:15:00Z"
+        maxstanzas: Constant.featured_message_num,
+        // since: "2013-05-12T05:15:00Z",
     });
     Featured.connection.send(pres);
 });
@@ -216,10 +242,11 @@ $(document).bind('connected', function() {
 $(document).bind('disconnected', function() {
     Featured.connection = null;
     $('#chat').empty();
-    $('#login_dialog').dialog('open');
+    window.close();
 });
 
 $(document).bind('room_joined', function() {
     Featured.joined = true;
     $('#leave').removeAttr('disabled');
+    $('#delete').removeAttr('disabled');
 });

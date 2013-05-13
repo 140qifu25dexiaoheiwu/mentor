@@ -12,6 +12,8 @@ var Online = {
 
         Online.online_users = online_users;
         Groupie.listRooms();
+        Online.connection.disconnect();
+
         return false;
     }
 
@@ -29,7 +31,7 @@ $(document).bind('student_connect', function(ev, data) {
         if (status === Strophe.Status.CONNECTED) {
             $(document).trigger('student_connected');
         } else if (status === Strophe.Status.DISCONNECTED) {
-            $(document).trigger('disconnected');
+            $(document).trigger('student_disconnected');
         }
     });
 
