@@ -14,8 +14,6 @@ var Groupie = {
     has_login: false,
 
     user_password: null,
-    offline_window: null,
-    featured_window: null,
 
 
     on_presence: function(presence) {
@@ -36,7 +34,12 @@ var Groupie = {
 
                 if (Groupie.teacher_nickname != nick) {
                     $('#participant-list').append('<li>' + nick + '</li>');
+                    if(Groupie.teacher_nickname == Groupie.nickname && Groupie.student_nickname == null){
+                        Groupie.student_nickname = nick;
+                    }
                 };
+
+
 
                 //每出现一个人就总人数就加1
                 total++;
@@ -299,12 +302,6 @@ var Groupie = {
         if (Online.connection != null) {
             Online.connection.disconnect();
         };
-        if (Groupie.offline_window != null) {
-            Groupie.offline_window.close();
-        };
-        if (Groupie.featured_window != null) {
-            Groupie.featured_window.close();
-        };
 
     },
 
@@ -515,6 +512,7 @@ $(document).bind('room_joined', function() {
     //如果是当前用户就记录该用户的位置
     position = total;
     if (position < 2 && Groupie.teacher_nickname != Groupie.nickname) {
+        alert('jiaoshimuqianbuzaidayifangjianzhong');
         $('#leave').trigger('click');
         return;
     };
