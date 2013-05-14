@@ -512,7 +512,7 @@ $(document).bind('room_joined', function() {
     //如果是当前用户就记录该用户的位置
     position = total;
     if (position < 2 && Groupie.teacher_nickname != Groupie.nickname) {
-        alert('jiaoshimuqianbuzaidayifangjianzhong');
+        alert('教师目前不在答疑房间中');
         $('#leave').trigger('click');
         return;
     };
