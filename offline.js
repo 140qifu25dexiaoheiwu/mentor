@@ -1,5 +1,8 @@
 var Gab = {
     connection: null,
+    login_type: null,
+    username: null,
+    password: null,
 
     jid_to_id: function(jid) {
         return Strophe.getBareJidFromJid(jid)
@@ -100,7 +103,30 @@ var Gab = {
     scroll_chat: function(jid_id) {
         var div = $('#chat-' + jid_id + ' .chat-messages').get(0);
         div.scrollTop = div.scrollHeight;
-    }
+    },
+
+    init: function(type, username, password) {
+
+        Gab.login_type = type;
+        Gab.username = username;
+        Gab.password = password;
+
+        $('#div-name').text('教师' + username + '离线信息');
+
+        if (type == Constant.student_login) {
+            $('#input').hide();
+            $('#delete').hide();
+        } else {
+            $('#input').show();
+            $('#delete').show();
+
+        };
+
+        $(document).trigger('offline_connect', {
+            jid: username + "@localhost",
+            password: password
+        });
+    },
 };
 
 $(document).ready(function() {
@@ -110,11 +136,11 @@ $(document).ready(function() {
     });
 
     var search = parseUri(window.location.search);
-    $('#div-name').text('教师' + search.queryKey[Constant.username] + '离线信息');
+    Gab.init(search.queryKey[Constant.login_type], search.queryKey[Constant.username], search.queryKey[Constant.password])
 
-    $(document).trigger('offline_connect', {
-        jid: search.queryKey[Constant.username] + "@localhost",
-        password: search.queryKey[Constant.password]
+    $('#leave').click(function() {
+        $('#leave').attr('disabled', 'disabled');
+        Gab.connection.disconnect();
     });
 
     $('.chat-input').live('keypress', function(ev) {
@@ -165,10 +191,11 @@ $(document).bind('offline_connect', function(ev, data) {
 
 $(document).bind('offline_connected', function() {
     console.log('offline_connected');
+    $('#leave').removeAttr('disabled');
+
     Gab.connection.addHandler(Gab.on_message,
     null, "message", "chat");
     Gab.connection.addHandler(Gab.on_presence, null, "presence");
-
     Gab.connection.send($pres());
 
 });
@@ -179,4 +206,5 @@ $(document).bind('offline_disconnected', function() {
     $('#offline-chat-area ul').empty();
     $('#offline-chat-area div').remove();
 
+    window.parent.Lightview.hide();
 });

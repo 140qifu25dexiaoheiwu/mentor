@@ -12,9 +12,43 @@
     <script type="text/javascript" src='offline.js'></script>
     <script type="text/javascript" src='parseUri.js'></script>
     <link rel='stylesheet' href='offline.css'></link>
-    <title>教师答疑系统</title>
+    <title>离线信息</title>
+
+    <script type="text/javascript">
+
+    function make_url(type) {
+      return "groupie.html?" + Constant.login_type + "=" + Gab.login_type + "&" + Constant.username + "=" + Gab.username + "&" + Constant.password + "=" + Gab.password;
+    }
+
+    function light_it(type) {
+      $('#back').attr('href',make_url(type));
+    }
+    </script>
+
   </head>
   <body>
+    <h1>离线信息</h1>
+
+    <div id='toolbar'>
+      <input id='leave' type='button' value='退出'
+            disabled='disabled'>
+      <a href= '#' onclick= 'light_it();' id= 'back'
+                   class="lightview" 
+                   data-lightview-type="iframe"
+                   data-lightview-group-options="controls: 'thumbnails'" 
+                   data-lightview-options="
+                     width: 615, 
+                     height: 660, 
+                     viewport: false,
+                     skin: 'mac',
+                     overlay: {
+                      close: false,
+                      backgroud: '#202020',
+                      opacity: .85
+                    }
+      "><input type='button' value='back'></a>
+    </div>
+
     <div class="container">
         <div class="row">
             <div class="span5 center">      

@@ -6,7 +6,9 @@ var Featured = {
     NS_MUC: "http://jabber.org/protocol/muc",
 
     joined: null,
-    participants: null,
+    login_type: null,
+    username: null,
+    password: null,
 
     on_presence: function(presence) {
         console.log(presence);
@@ -128,7 +130,20 @@ var Featured = {
         }
     },
 
-    init: function(username, password) {
+    init: function(type, username, password) {
+
+        Featured.login_type = type;
+        Featured.username = username;
+        Featured.password = password;
+
+        if (type == Constant.student_login) {
+            $('#input').hide();
+            $('#delete').hide();
+        } else {
+            $('#input').show();
+            $('#delete').show();
+
+        };
 
         Featured.room = Constant.featured + "@conference.localhost";
         Featured.nickname = username;
@@ -151,16 +166,7 @@ $(document).ready(function() {
     });
 
     var search = parseUri(window.location.search);
-    Featured.init(search.queryKey[Constant.username], search.queryKey[Constant.password]);
-
-    if (search.queryKey[Constant.login_type] == Constant.student_login) {
-        $('#input').hide();
-        $('#delete').hide();
-    } else {
-        $('#input').show();
-        $('#delete').show();
-
-    };
+    Featured.init(search.queryKey[Constant.login_type], search.queryKey[Constant.username], search.queryKey[Constant.password]);
 
     $('#leave').click(function() {
         $('#leave').attr('disabled', 'disabled');
@@ -242,7 +248,8 @@ $(document).bind('connected', function() {
 $(document).bind('disconnected', function() {
     Featured.connection = null;
     $('#chat').empty();
-    window.close();
+    window.parent.Lightview.hide();
+    //window.close();
 });
 
 $(document).bind('room_joined', function() {

@@ -27,13 +27,6 @@
     </style>
 
     <script type="text/javascript">
-    function popitup(url) {
-      newwindow = window.open(url, $('#inputUsername').val(), 'height=650,width=615,location=no');
-      if (window.focus) {
-        newwindow.focus()
-      }
-      return false;
-    }
 
     function make_url(type) {
       return "groupie.html?" + Constant.login_type + "=" + type + "&" + Constant.username + "=" + $('#inputUsername').val() + "&" + Constant.password + "=" + $('#inputPassword').val();
@@ -47,10 +40,6 @@
       }else if (type == Constant.student_register) {
         $('#student_register').attr('href',make_url(type));
       }
-    }
-
-    function closeIFrame(){
-     console.log('closeIFrame');
     }
 
     $(document).ready(function() {
@@ -114,7 +103,7 @@
 
                    <a href= '#' onclick= 'light_it(Constant.teacher_login);' id= 'teacher_login'
                    class="lightview" 
-                   data-lightview-type="iframe"  
+                   data-lightview-type="iframe"
                    data-lightview-group-options="controls: 'thumbnails'" 
                    data-lightview-options="
                      width: 615, 
