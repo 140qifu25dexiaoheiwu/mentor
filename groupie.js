@@ -305,12 +305,10 @@ var Groupie = {
         if (Groupie.featured_window != null) {
             Groupie.featured_window.close();
         };
-        window.close();
-
+        window.parent.Lightview.hide();
     },
 
     init: function(type, username, password) {
-
         switch (parseInt(type)) {
             case Constant.student_register:
                 Groupie.room = null;
@@ -462,11 +460,20 @@ $(document).ready(function() {
             var body = $(this).val();
 
             //如果是老师，则将消息发送给学生，否则发送消息给老师
-            var target = Groupie.teacher_nickname;
+            var target = null;
             if (Groupie.nickname == Groupie.teacher_nickname) {
-                target = Groupie.student_nickname;
+                if (Groupie.student_nickname != null){
+                    target = Groupie.student_nickname;
+                }else {
+                    alert('对不起，目前没有学生提问。');
+                };
+            }else {
+                target = Groupie.teacher_nickname
             };
-            Groupie.send_msg(target, body);
+
+            if (target != null){
+                Groupie.send_msg(target, body);
+            }
 
             $(this).val('');
         }
@@ -566,6 +573,8 @@ $(document).bind('user_left', function(ev, nick) {
     if (nick == Groupie.teacher_nickname) {
         $('#leave').trigger('click');
         return;
+    }else {
+        Groupie.student_nickname = null;
     };
 
     //如果是学生退出，则更新所有学生的位置，排在该学生之前的学生位置不变，之后的每人向前一位

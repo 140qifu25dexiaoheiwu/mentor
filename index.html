@@ -10,6 +10,11 @@
     <script type="text/javascript" src='popupWindow.js'></script>
     <script type="text/javascript" src='constants.js'></script>
 
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
+    <script type="text/javascript" src="lightview/js/spinners/spinners.min.js"></script>
+    <script type="text/javascript" src="lightview/js/lightview/lightview.js"></script>
+    <link rel="stylesheet" type="text/css" href="lightview/css/lightview/lightview.css" />
+
 
 
     <title>教师答疑系统</title>
@@ -27,20 +32,22 @@
       return "groupie.html?" + Constant.login_type + "=" + type + "&" + Constant.username + "=" + $('#inputUsername').val() + "&" + Constant.password + "=" + $('#inputPassword').val();
     }
 
+    function light_it(type) {
+      if (type == Constant.teacher_login) {
+        $('#teacher_login').attr('href',make_url(type));
+      }else if (type == Constant.student_login) {
+        $('#student_login').attr('href',make_url(type));
+      }else if (type == Constant.student_register) {
+        $('#student_register').attr('href',make_url(type));
+      }
+    }
+
+    function closeIFrame(){
+     console.log('closeIFrame');
+    }
+
     $(document).ready(function() {
       $('.carousel').carousel();
-
-      $('#student_register').click(function() {
-        popitup(make_url(Constant.student_register));
-      });
-
-      $('#student_login').click(function() {
-        popitup(make_url(Constant.student_login));
-      });
-
-      $('#teacher_login').click(function() {
-        popitup(make_url(Constant.teacher_login));
-      });
     });
     </script>
 
@@ -66,9 +73,54 @@
               </div>
               <div class="control-group">
                 <div class="controls">
-                  <button type="submit" class="btn" id='student_register'>学生注册</button>
-                  <button type="submit" class="btn" id='student_login'>学生登陆</button>
-                  <button type="submit" class="btn" id='teacher_login'>教师登陆</button>
+                  <a href= '#' onclick= 'light_it(Constant.student_register);' id= 'student_register'
+                   class="lightview" 
+                   data-lightview-type="iframe"  
+                   data-lightview-group-options="controls: 'thumbnails'" 
+                   data-lightview-options="
+                     width: 615, 
+                     height: 660, 
+                     viewport: false,
+                     skin: 'mac',
+                     overlay: {
+                      close: false,
+                      backgroud: '#202020',
+                      opacity: .85
+                    } 
+                   "><btn class='btn'>学生注册</btn></a>
+                  
+                  <a href= '#' onclick= 'light_it(Constant.student_login);' id='student_login'
+                   class="lightview" 
+                   data-lightview-type="iframe"  
+                   data-lightview-group-options="controls: 'thumbnails'" 
+                   data-lightview-options="
+                     width: 615, 
+                     height: 660, 
+                     viewport: false,
+                     skin: 'mac',
+                     overlay: {
+                      close: false,
+                      backgroud: '#202020',
+                      opacity: .85
+                    } 
+                   "><btn class='btn'>学生登陆</btn></a>
+
+                   <a href= '#' onclick= 'light_it(Constant.teacher_login);' id= 'teacher_login'
+                   class="lightview" 
+                   data-lightview-type="iframe"  
+                   data-lightview-group-options="controls: 'thumbnails'" 
+                   data-lightview-options="
+                     width: 615, 
+                     height: 660, 
+                     viewport: false,
+                     skin: 'mac',
+                     overlay: {
+                      close: false,
+                      backgroud: '#202020',
+                      opacity: .85
+                    }
+                   "><btn class='btn'>教师登陆</btn></a>
+                  
                 </div>
               </div>
             </fieldset>
