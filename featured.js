@@ -170,24 +170,6 @@ var Featured = {
     },
 
     clear: function () {
-        var num = parseInt(Constant.featured_message_num);
-        num = 0;
-        for (var i = 0; i < num; i++) {
-            Featured.connection.send(
-            $msg({
-                to: Featured.room,
-                type: "groupchat"
-            }).c('body').t(Constant.cleaner_message));
-        }
-
-        $('#chat div').each(function() {
-            Featured.connection.send(
-            $msg({
-                to: Featured.room,
-                type: "groupchat"
-            }).c('body').t($(this).text()));
-            console.log($(this).text());
-        });
     },
 };
 
