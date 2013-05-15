@@ -29,25 +29,9 @@
       }
     }
 
-    // pop_offline: function(url) {
-    //     Groupie.offline_window = window.open(url, Groupie.nickname + '-offline', 'height=520,width=380,location=no');
-    //     if (window.focus) {
-    //         Groupie.offline_window.focus()
-    //     }
-    //     return false;
-    // },
-
-    // pop_featured: function(url) {
-    //     Groupie.featured_window = window.open(url, Groupie.nickname + '-featured', 'height=590,width=425,location=no');
-    //     if (window.focus) {
-    //         Groupie.featured_window.focus()
-    //     }
-    //     return false;
-    // },
-
     function make_url(html) {
         var login_type = Groupie.nickname == Groupie.teacher_nickname ? Constant.teacher_login : Constant.student_login;
-        return html + Constant.login_type + "=" + login_type + "&" + Constant.username + "=" + Groupie.nickname + "&" + Constant.password + "=" + Groupie.user_password;
+        return html + Constant.teacher_name + "=" + Groupie.teacher_nickname + "&" + Constant.login_type + "=" + login_type + "&" + Constant.username + "=" + Groupie.nickname + "&" + Constant.password + "=" + Groupie.user_password;
     }
 
     </script>

@@ -13,17 +13,19 @@
     <script src='strophe.js'></script>
 
     <link rel='stylesheet' href='groupie.css'>
+    <style type="text/css">
+      #chat-area {
+          float: left;
+          width: 580px;
+      }
+
+      #chat {
+          overflow: auto;
+          height: 445px;
+          border: solid 1px #ccc;
+      }
+    </style>
     <script src='featured.js'></script>
-    <script type="text/javascript">
-
-    function make_url(type) {
-      return "groupie.html?" + Constant.login_type + "=" + Featured.login_type + "&" + Constant.username + "=" + Featured.username + "&" + Constant.password + "=" + Featured.password;
-    }
-
-    function light_it(type) {
-      $('#back').attr('href',make_url(type));
-    }
-    </script>
   </head>
   <body>
     <h1>公告栏</h1>
@@ -33,7 +35,7 @@
             disabled='disabled'>
       <input id='delete' type='button' value='清空公告栏'
             disabled='disabled'>
-      <a href= '#' onclick= 'light_it();' id= 'back'
+      <a href= '#' onclick= 'Featured.light_it();' id= 'back'
                    class="lightview" 
                    data-lightview-type="iframe"
                    data-lightview-group-options="controls: 'thumbnails'" 
@@ -47,7 +49,7 @@
                       backgroud: '#202020',
                       opacity: .85
                     }
-      "><input type='button' value='返回在线答疑'></a>
+      "><input id='back_btn' type='button' value='返回在线答疑'></a>
     </div>
 
     <div>

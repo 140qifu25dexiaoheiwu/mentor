@@ -14,7 +14,9 @@ var Groupie = {
     has_login: false,
 
     user_password: null,
-
+    endsWith: function(o,s) {
+        return o.length >= s.length && o.substr(o.length - s.length) == s;
+    },
 
     on_presence: function(presence) {
         var from = $(presence).attr('from');
@@ -34,7 +36,7 @@ var Groupie = {
 
                 if (Groupie.teacher_nickname != nick) {
                     $('#participant-list').append('<li>' + nick + '</li>');
-                    if(Groupie.teacher_nickname == Groupie.nickname && Groupie.student_nickname == null){
+                    if (Groupie.teacher_nickname == Groupie.nickname && Groupie.student_nickname == null) {
                         Groupie.student_nickname = nick;
                     }
                 };
@@ -203,7 +205,7 @@ var Groupie = {
         $('item', iq).each(function(index, value) {
             var jid = $(value).attr('jid');
             var name = Strophe.getNodeFromJid(jid);
-            if (name != Constant.featured) {
+            if (!Groupie.endsWith(name, Constant.featured)) {
                 count++;
                 var color = Constant.color_offline;
                 if (Online.online_users[name]) color = Constant.color_online;
@@ -428,16 +430,16 @@ $(document).ready(function() {
             //如果是老师，则将消息发送给学生，否则发送消息给老师
             var target = null;
             if (Groupie.nickname == Groupie.teacher_nickname) {
-                if (Groupie.student_nickname != null){
+                if (Groupie.student_nickname != null) {
                     target = Groupie.student_nickname;
-                }else {
+                } else {
                     alert('对不起，目前没有学生提问。');
                 };
-            }else {
+            } else {
                 target = Groupie.teacher_nickname
             };
 
-            if (target != null){
+            if (target != null) {
                 Groupie.send_msg(target, body);
             }
 
@@ -541,7 +543,7 @@ $(document).bind('user_left', function(ev, nick) {
     if (nick == Groupie.teacher_nickname) {
         $('#leave').trigger('click');
         return;
-    }else {
+    } else {
         Groupie.student_nickname = null;
     };
 

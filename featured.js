@@ -9,10 +9,20 @@ var Featured = {
     login_type: null,
     username: null,
     password: null,
+    has_login: false,
+
+    make_url: function() {
+        return "groupie.html?" + Constant.login_type + "=" + Featured.login_type + "&" + Constant.username + "=" + Featured.username + "&" + Constant.password + "=" + Featured.password;
+    },
+
+    light_it: function() {
+        console.log('light_it');
+        $('#back').attr('href', Featured.make_url());
+    },
 
     on_presence: function(presence) {
         console.log(presence);
-
+        
         var from = $(presence).attr('from');
         var room = Strophe.getBareJidFromJid(from);
 
@@ -130,7 +140,7 @@ var Featured = {
         }
     },
 
-    init: function(type, username, password) {
+    init: function(teacher_name, type, username, password) {
 
         Featured.login_type = type;
         Featured.username = username;
@@ -145,7 +155,7 @@ var Featured = {
 
         };
 
-        Featured.room = Constant.featured + "@conference.localhost";
+        Featured.room = teacher_name + Constant.featured + "@conference.localhost";
         Featured.nickname = username;
 
         $(document).trigger('connect', {
@@ -166,7 +176,7 @@ $(document).ready(function() {
     });
 
     var search = parseUri(window.location.search);
-    Featured.init(search.queryKey[Constant.login_type], search.queryKey[Constant.username], search.queryKey[Constant.password]);
+    Featured.init(search.queryKey[Constant.teacher_name], search.queryKey[Constant.login_type], search.queryKey[Constant.username], search.queryKey[Constant.password]);
 
     $('#leave').click(function() {
         $('#leave').attr('disabled', 'disabled');
@@ -248,12 +258,18 @@ $(document).bind('connected', function() {
 $(document).bind('disconnected', function() {
     Featured.connection = null;
     $('#chat').empty();
-    window.parent.Lightview.hide();
+    if (!Featured.has_login) {
+        alert('notice is empty');
+        $('#back_btn').trigger('click');
+    } else {
+        window.parent.Lightview.hide();
+    }
     //window.close();
 });
 
 $(document).bind('room_joined', function() {
     Featured.joined = true;
+    Featured.has_login = true;
     $('#leave').removeAttr('disabled');
     $('#delete').removeAttr('disabled');
 });
