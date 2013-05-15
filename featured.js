@@ -10,6 +10,7 @@ var Featured = {
     username: null,
     password: null,
     has_login: false,
+    index: 0,
 
     make_url: function() {
         return "groupie.html?" + Constant.login_type + "=" + Featured.login_type + "&" + Constant.username + "=" + Featured.username + "&" + Constant.password + "=" + Featured.password;
@@ -22,7 +23,7 @@ var Featured = {
 
     on_presence: function(presence) {
         console.log(presence);
-        
+
         var from = $(presence).attr('from');
         var room = Strophe.getBareJidFromJid(from);
 
@@ -92,6 +93,8 @@ var Featured = {
             var body = $(message).children('body').text();
 
             console.log('body ' + body);
+            console.log('index ' + Featured.index);
+            Featured.index++;
             if (body == Constant.cleaner_message) {
                 return true;
             }
@@ -189,8 +192,15 @@ $(document).ready(function() {
     });
 
     $('#delete').click(function() {
-        $('#chat').empty();
+        //$('#chat').empty();
+
         var num = parseInt(Constant.featured_message_num);
+        if (Featured.index <= num) {
+            num = num - Featured.index + 1;
+        } else {
+            num = 1;
+        };
+        console.log('num ' + num);
         for (var i = 0; i < num; i++) {
             Featured.connection.send(
             $msg({
@@ -198,6 +208,11 @@ $(document).ready(function() {
                 type: "groupchat"
             }).c('body').t(Constant.cleaner_message));
         }
+
+        $('#chat div').each(function() {
+            $(this).remove();
+            return false;
+        });
     });
 
     $('#input').keypress(function(ev) {
