@@ -259,7 +259,7 @@ $(document).bind('disconnected', function() {
     Featured.connection = null;
     $('#chat').empty();
     if (!Featured.has_login) {
-        alert('notice is empty');
+        alert('该教师尚未建立留言板');
         $('#back_btn').trigger('click');
     } else {
         window.parent.Lightview.hide();
