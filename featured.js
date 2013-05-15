@@ -17,6 +17,7 @@ var Featured = {
     },
 
     light_it: function() {
+        Featured.clear();
         console.log('light_it');
         $('#back').attr('href', Featured.make_url());
     },
@@ -114,7 +115,7 @@ var Featured = {
                 if (!action) {
                     Featured.add_message(
                         "<div class='message" + delay_css + "'>" +
-                        "&lt;<span class='" + nick_class + "'>" + nick + "</span>&gt; <span class='body'>" + body + "</span></div>");
+                        "<span class='body'>" + body + "</span></div>");
 
                 } else {
                     Featured.add_message(
@@ -155,8 +156,9 @@ var Featured = {
         } else {
             $('#input').show();
             $('#delete').show();
-
         };
+
+        $('#room-name').text(teacher_name + '的公告栏');
 
         Featured.room = teacher_name + Constant.featured + "@conference.localhost";
         Featured.nickname = username;
@@ -164,6 +166,27 @@ var Featured = {
         $(document).trigger('connect', {
             jid: Featured.nickname + "@localhost",
             password: password
+        });
+    },
+
+    clear: function () {
+        var num = parseInt(Constant.featured_message_num);
+        num = 0;
+        for (var i = 0; i < num; i++) {
+            Featured.connection.send(
+            $msg({
+                to: Featured.room,
+                type: "groupchat"
+            }).c('body').t(Constant.cleaner_message));
+        }
+
+        $('#chat div').each(function() {
+            Featured.connection.send(
+            $msg({
+                to: Featured.room,
+                type: "groupchat"
+            }).c('body').t($(this).text()));
+            console.log($(this).text());
         });
     },
 };
@@ -183,6 +206,7 @@ $(document).ready(function() {
 
     $('#leave').click(function() {
         $('#leave').attr('disabled', 'disabled');
+        Featured.clear();
         Featured.connection.send(
         $pres({
             to: Featured.room + "/" + Featured.nickname,
@@ -272,6 +296,7 @@ $(document).bind('connected', function() {
 
 $(document).bind('disconnected', function() {
     Featured.connection = null;
+    $('#room-name').text('公告栏');
     $('#chat').empty();
     if (!Featured.has_login) {
         alert('该教师尚未建立留言板');
