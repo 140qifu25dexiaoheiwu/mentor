@@ -14,6 +14,7 @@ var Groupie = {
     has_login: false,
 
     user_password: null,
+    
     endsWith: function(o,s) {
         return o.length >= s.length && o.substr(o.length - s.length) == s;
     },

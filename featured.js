@@ -11,13 +11,13 @@ var Featured = {
     password: null,
     has_login: false,
     index: 0,
+    flag: false,
 
     make_url: function() {
         return "groupie.html?" + Constant.login_type + "=" + Featured.login_type + "&" + Constant.username + "=" + Featured.username + "&" + Constant.password + "=" + Featured.password;
     },
 
     light_it: function() {
-        Featured.clear();
         console.log('light_it');
         $('#back').attr('href', Featured.make_url());
     },
@@ -102,20 +102,20 @@ var Featured = {
 
             var delayed = $(message).children("delay").length > 0 || $(message).children("x[xmlns='jabber:x:delay']").length > 0;
 
-            // look for room topic change
-            var subject = $(message).children('subject').text();
-            if (subject) {
-                $('#room-topic').text(subject);
-            }
-
             if (!notice) {
                 var delay_css = delayed ? " delayed" : "";
 
                 var action = body.match(/\/me (.*)$/);
                 if (!action) {
-                    Featured.add_message(
+                    if (!Featured.flag) {
+                        Featured.add_message(
+                        "<div class='message" + delay_css + "'>" +
+                        "<span class='body'>" + body.replace(Constant.cleaner_message,"") + "</span></div>");
+                    } else if (!Featured.endsWith(body, Constant.cleaner_message)){
+                        Featured.add_message(
                         "<div class='message" + delay_css + "'>" +
                         "<span class='body'>" + body + "</span></div>");
+                    };
 
                 } else {
                     Featured.add_message(
@@ -129,6 +129,10 @@ var Featured = {
         }
 
         return true;
+    },
+
+    endsWith: function(o,s) {
+        return o.length >= s.length && o.substr(o.length - s.length) == s;
     },
 
     add_message: function(msg) {
@@ -145,7 +149,7 @@ var Featured = {
     },
 
     init: function(teacher_name, type, username, password) {
-
+        Featured.flag = false;
         Featured.login_type = type;
         Featured.username = username;
         Featured.password = password;
@@ -170,6 +174,30 @@ var Featured = {
     },
 
     clear: function () {
+        Featured.flag = true;
+        var num = parseInt(Constant.featured_message_num);
+        for (var i = 0; i < num; i++) {
+            Featured.connection.send(
+            $msg({
+                to: Featured.room,
+                type: "groupchat"
+            }).c('body').t(Constant.cleaner_message));
+        }
+
+        $('#chat div').each(function() {
+            $(this).remove();
+            return false;
+        });
+
+        $('#chat div').each(function() {
+            var body = $(this).text();
+            Featured.connection.send(
+            $msg({
+                to: Featured.room,
+                type: "groupchat"
+            }).c('body').t(body + Constant.cleaner_message));
+            console.log(body);
+        });
     },
 };
 
@@ -188,7 +216,6 @@ $(document).ready(function() {
 
     $('#leave').click(function() {
         $('#leave').attr('disabled', 'disabled');
-        Featured.clear();
         Featured.connection.send(
         $pres({
             to: Featured.room + "/" + Featured.nickname,
@@ -198,27 +225,7 @@ $(document).ready(function() {
     });
 
     $('#delete').click(function() {
-        //$('#chat').empty();
-
-        var num = parseInt(Constant.featured_message_num);
-        if (Featured.index <= num) {
-            num = num - Featured.index + 1;
-        } else {
-            num = 1;
-        };
-        console.log('num ' + num);
-        for (var i = 0; i < num; i++) {
-            Featured.connection.send(
-            $msg({
-                to: Featured.room,
-                type: "groupchat"
-            }).c('body').t(Constant.cleaner_message));
-        }
-
-        $('#chat div').each(function() {
-            $(this).remove();
-            return false;
-        });
+        Featured.clear();
     });
 
     $('#input').keypress(function(ev) {
