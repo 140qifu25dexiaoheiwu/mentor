@@ -35,7 +35,7 @@ var Groupie = {
                 Groupie.participants[nick] = user_jid || true;
 
                 if (Groupie.teacher_nickname != nick) {
-                    $('#participant-list').append('<li>' + nick + '</li>');
+                    $('#participant-list').append('<div>' + nick + '</div>');
                     if (Groupie.teacher_nickname == Groupie.nickname && Groupie.student_nickname == null) {
                         Groupie.student_nickname = nick;
                     }
@@ -51,7 +51,7 @@ var Groupie = {
                 }
             } else if (Groupie.participants[nick] && $(presence).attr('type') === 'unavailable') {
                 // remove from participants list
-                $('#participant-list li').each(function() {
+                $('#participant-list div').each(function() {
                     if (nick === $(this).text()) {
                         $(this).remove();
                         return false;
